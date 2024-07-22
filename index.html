@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+</head>
+<body>
+    <h1>Quiz</h1>
+    <form id="language-form">
+        <label for="language">Choose Language:</label>
+        <select id="language" name="language">
+            <option value="pt">Português</option>
+            <option value="en">English</option>
+        </select>
+        <button type="submit">Start Quiz</button>
+    </form>
+
+    <script>
+        document.getElementById('language-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var language = document.getElementById('language').value;
+            fetch('/start_quiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ language: language }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Language</title>
+</head>
+<body>
+    <h1>Select Language / Selecione o Idioma</h1>
+    <form action="{{ url_for('start') }}" method="POST">
+        <input type="radio" id="english" name="language" value="en" required>
+        <label for="english">English</label><br>
+        <input type="radio" id="portuguese" name="language" value="pt" required>
+        <label for="portuguese">Português</label><br>
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
