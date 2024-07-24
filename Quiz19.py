@@ -8,7 +8,7 @@ import pandas as pd
 import os
 
 # Configuração da porta serial
-port = 'COM4'
+port = 'COM5'
 baud_rate = 9600
 rfid_data = ""
 current_question = 0
@@ -185,6 +185,11 @@ def show_incorrect_message(question_index):
     show_overlay_message(incorrect_messages[question_index], message_after_reply[question_index], is_correct=False)
     root.after(5000, next_question)
 
+
+def show_final_message():
+    canvas.delete("all")
+    canvas.create_image(0, 0, image=background_photo, anchor="nw")
+    canvas.create_text(screen_width//2, screen_height//2, text="Quiz Finished! / Quiz Finalizado!", font=("Helvetica", 24), width=700, fill="black")
 
 def next_question():
     global current_question
@@ -490,9 +495,31 @@ def show_registration_form(language):
     # Adiciona o teclado virtual
     create_keyboard(root, canvas)
 
+def show_rest_screen():
+    canvas.delete("all")
+    canvas.create_image(0, 0, image=background_photo, anchor="nw")
+
+    # Desvincula todos os eventos de clique
+    canvas.unbind("<Button-1>")
+
+    logo_img = Image.open("fedexLogo.png").convert("RGBA")
+    logo_img = logo_img.resize((600, 300), Image.Resampling.LANCZOS)
+    logo_photo = ImageTk.PhotoImage(logo_img)
+    canvas.create_image(screen_width // 2, screen_height // 2, image=logo_photo, anchor="center")
+
+    # Vincula o evento de clique do mouse para chamar a função show_language_selection
+    canvas.bind("<Button-1>", lambda event: show_language_selection())
+
+    root.mainloop()
+
+
 def show_language_selection():
     canvas.delete("all")
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
+
+    # Desvincula todos os eventos de clique
+    canvas.unbind("<Button-1>")
+
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((450, 225), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
@@ -512,11 +539,6 @@ def show_language_selection():
     en_button = tk.Button(root, text="ENGLISH", font=("Helvetica", 45), bd=0, command=lambda: show_registration_form("en"), fg="white", bg="black", width=20, height=1)
     en_button_window = canvas.create_window(screen_width//2, screen_height//4 + 300, anchor="center", window=en_button)
     root.mainloop()
-
-def show_final_message():
-    canvas.delete("all")
-    canvas.create_image(0, 0, image=background_photo, anchor="nw")
-    canvas.create_text(screen_width//2, screen_height//2, text="Quiz Finished! / Quiz Finalizado!", font=("Helvetica", 24), width=700, fill="black")
 
 # Configuração da interface gráfica
 root = tk.Tk()
@@ -557,5 +579,5 @@ threading.Thread(target=read_rfid, daemon=True).start()
 # Atualizar o rótulo de RFID periodicamente
 root.after(1000, update_rfid_label)
 
-# Mostrar a tela de seleção de idioma
-show_language_selection()
+# Mostrar a tela de descanso ao iniciar o programa
+show_rest_screen()

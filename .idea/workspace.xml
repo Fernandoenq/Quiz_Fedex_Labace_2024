@@ -5,41 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c7b6794-6efa-4310-ace3-46b74bd75c2d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/Quiz.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/APKQuiz.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz10.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz11.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz12.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz13.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz14.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz15.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz16.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz16TecladoNaMao.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz17.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz18.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz2.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz3.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz4.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz5.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz6.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz7.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz8.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz9.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/appantigo.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/index.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/question.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/quiz.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/result.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/teste tk.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz19.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Quiz.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Quiz.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Quiz18.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz18.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/registration_data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/registration_data.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -75,11 +46,12 @@
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/ferna/OneDrive/Documents/LabaceFedexQuiz/Quiz&quot;
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/anabe/Documents/GitHub/Quiz_Fedex_Labace_2024&quot;
   }
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\anabe\Documents\GitHub\Quiz_Fedex_Labace_2024" />
       <recent name="C:\Users\ferna\OneDrive\Documents\LabaceFedexQuiz\Quiz" />
     </key>
   </component>
@@ -184,7 +156,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-48aec45f0201-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.17011.127" />
+        <option value="bundled-python-sdk-975db3bf15a3-31b6be0877a2-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.18034.82" />
       </set>
     </attachedChunks>
   </component>
