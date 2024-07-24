@@ -1,11 +1,12 @@
 import tkinter as tk
-from tkinter import messagebox
+import tkinter.font as tkFont
 from PIL import Image, ImageTk
 import serial
 import threading
 from screeninfo import get_monitors
 import pandas as pd
 import os
+
 
 # Configuração da porta serial
 port = 'COM5'
@@ -14,6 +15,7 @@ rfid_data = ""
 current_question = 0
 current_answer = 0
 answers = []
+current_hits = 0
 
 def place_on_first_monitor(root):
     monitors = get_monitors()
@@ -31,8 +33,31 @@ def place_on_second_monitor(root):
     else:
         print("Apenas um monitor detectado. Não é possível colocar a janela no segundo monitor.")
 
+def change_answer_bg_color(answer_index, temp_color):
+    canvas.itemconfig(answer_bg_ids[answer_index], fill=temp_color)
+    delay(2000)
+    show_overlay_message(current_message, current_sub_message, current_is_correct)
+
+
+def delay(ms):
+    root.after(ms)
+    root.update()
+def show_correct_message(question_index):
+    global current_message, current_sub_message, current_is_correct
+    current_message = correct_messages[question_index]
+    current_sub_message = message_after_reply[question_index]
+    current_is_correct = True
+    change_answer_bg_color(current_answer - 1, "#4D148C")  # Mudar a cor para verde
+
+def show_incorrect_message(question_index):
+    global current_message, current_sub_message, current_is_correct
+    current_message = incorrect_messages[question_index]
+    current_sub_message = message_after_reply[question_index]
+    current_is_correct = False
+    change_answer_bg_color(current_answer - 1, "red")  # Mudar a cor para vermelho
+
 def read_rfid():
-    global rfid_data, current_question, current_answer
+    global rfid_data, current_question, current_answer, current_hits
     try:
         with serial.Serial(port, baud_rate, timeout=1) as ser:
             while True:
@@ -49,7 +74,6 @@ def read_rfid():
                     elif cleaned_rfid_data == "UIDTAG:0448CD95BE2A81":
                         print("Resposta 2")
                         current_answer = 2
-
                     elif cleaned_rfid_data == "UIDTAG:0417DA95BE2A81":
                         print("Resposta 3")
                         current_answer = 3
@@ -61,10 +85,14 @@ def read_rfid():
                     print(current_question)
                     print(correct_answers)
                     print(rfid_data)
+                    print("current_hits")
+                    print(current_hits)
 
                     if current_question < len(correct_answers) and current_answer == correct_answers[current_question]:
                         print(f"Resposta correta: {rfid_data}")
                         rfid_data = ""
+                        current_hits += 1
+                        print(current_hits)
                         show_correct_message(current_question)
                     elif current_question < len(correct_answers) and current_answer != correct_answers[current_question]:
                         print(f"Resposta incorreta: {rfid_data}")
@@ -104,39 +132,42 @@ def create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
               x1, y1+radius,
               x1, y1]
     return canvas.create_polygon(points, **kwargs, smooth=True)
-
-
 def show_question(question, possible_answers, current_question):
-    global logo_img, logo_photo, background_photo
+    global logo_img, logo_photo, background_photo, question_text_id, answer_text_ids, answer_bg_ids
 
     canvas.delete("all")
+    answer_text_ids = []  # Resetar a lista de IDs das respostas
+    answer_bg_ids = []  # Resetar a lista de IDs dos fundos das respostas
 
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
-
-    #canvas.create_text(200, 152,text=f'Pergunta {current_question + 1}' if selected_language == "pt" else f'Question {current_question + 1}',font=("Helvetica", 18), width=900, fill="white")
 
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((550, 275), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
     canvas.create_image(screen_width // 2, 100, image=logo_photo, anchor="center")
 
-    canvas.create_text(screen_width - 200, 152, text=f'Tempo: 20s', font=("Helvetica", 18),
-                       width=900, fill="white")
+    custom_font1 = tkFont.Font(family="FedEx Sans", size=18)
+    custom_font2 = tkFont.Font(family="FedEx Sans", size=24)
+
+    canvas.create_text(screen_width - 200, 152, text=f'Tempo: 20s', font=custom_font1, width=900, fill="white")
 
     x1, y1 = 50, screen_height // 5  # inicio do preto
     x2, y2 = screen_width - 50, screen_height // 3  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
 
-    canvas.create_text(screen_width - (screen_width - 70), screen_height // 4, text=question, font=("Helvetica", 24), width=900,
+    question_text_id = canvas.create_text(screen_width - (screen_width - 70), screen_height // 4, text=question, font=custom_font2, width=900,
                        fill="white", anchor="w")
     for idx, answer in enumerate(possible_answers):
-
         x1, y1 = 50, screen_height // 4 + 250 + idx * 150  # inicio do preto
         x2, y2 = screen_width - 50, screen_height // 4 + 350 + idx * 150  # Final do preto
-        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
+        bg_id = create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
+        answer_bg_ids.append(bg_id)
 
-        canvas.create_text(screen_width - (screen_width - 70), screen_height // 4 + 300 + idx * 150, text=answer, font=("Helvetica", 24),
+        answer_text_id = canvas.create_text(screen_width - (screen_width - 70), screen_height // 4 + 300 + idx * 150, text=answer, font=custom_font2,
                            width=900, fill="white", anchor="w")
+        answer_text_ids.append(answer_text_id)
+
+
 
 def show_overlay_message(message, sub_message, is_correct):
     # Cria uma nova janela superior (Toplevel) que será usada como overlay
@@ -163,41 +194,75 @@ def show_overlay_message(message, sub_message, is_correct):
     # Define um limite de largura para o texto
     text_width = screen_width - 100  # 50 pixels de margem de cada lado
 
+    custom_font1 = tkFont.Font(family="FedEx Sans", size=80)
+    custom_font2 = tkFont.Font(family="FedEx Sans", size=40)
+
     # Adiciona o texto da mensagem principal no centro do canvas
-    overlay_canvas.create_text(screen_width // 2, screen_height // 4 - 50, text=message, font=("Helvetica", 80),
+    overlay_canvas.create_text(screen_width // 2, screen_height // 4 - 50, text=message, font=custom_font1,
                                fill=f'#4D148C' if is_correct  else f'red', width=text_width)
 
     # Adiciona o texto da mensagem secundária abaixo da mensagem principal
-    overlay_canvas.create_text(screen_width // 2, screen_height // 2, text=sub_message, font=("Helvetica", 40),
+    overlay_canvas.create_text(screen_width // 2, screen_height // 2, text=sub_message, font=custom_font2,
                                fill="white", width=text_width)
 
     # Define para destruir (fechar) a janela overlay após 5 segundos
+    root.after(5000, next_question)
     root.after(5000, overlay.destroy)
 
 
 
-def show_correct_message(question_index):
-    show_overlay_message(correct_messages[question_index], message_after_reply[question_index], is_correct=True)
-    root.after(5000, next_question)
-
-def show_incorrect_message(question_index):
-    show_overlay_message(incorrect_messages[question_index], message_after_reply[question_index], is_correct=False)
-    root.after(5000, next_question)
-
-
 def show_final_message():
+    global logo_img, logo_photo
     canvas.delete("all")
+
+    # Determinar a mensagem com base na pontuação
+    if current_hits > 3:
+        main_message_pt = "Parabéns!"
+        main_message_en = "Congratulations!"
+        sub_message_pt = f"Desempenho {current_hits}/5"
+        sub_message_en = f"Performance {current_hits}/5"
+        last_message_pt = f"RETIRE SEU BRINDE"
+        last_message_en = f"COLLECT YOUR GIFT"
+    else:
+        main_message_pt = "Que pena!"
+        main_message_en = "What a pity!"
+        sub_message_pt = f"Desempenho {current_hits}/5"
+        sub_message_en = f"Performance {current_hits}/5"
+        last_message_pt = f"NÂO FOI DESSA VEZ"
+        last_message_en = f"IT WAS NOT THIS TIME"
+
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
-    canvas.create_text(screen_width//2, screen_height//2, text="Quiz Finished! / Quiz Finalizado!", font=("Helvetica", 24), width=700, fill="black")
+
+    # Carregar a imagem do logo
+    logo_img = Image.open("fedexLogo.png").convert("RGBA")
+    logo_img = logo_img.resize((550, 275), Image.Resampling.LANCZOS)
+    logo_photo = ImageTk.PhotoImage(logo_img)
+    canvas.create_image(screen_width // 2, 100, image=logo_photo, anchor="center")
+
+    custom_font1 = tkFont.Font(family="FedEx Sans", size=60)
+    custom_font2 = tkFont.Font(family="FedEx Sans", size=24)
+    custom_font3 = tkFont.Font(family="FedEx Sans", size=70)
+
+    # Exibir mensagem final em português ou inglês
+    if selected_language == "pt":
+        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_pt, font=custom_font1, fill="white")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_pt, font=custom_font2, fill="white")
+        canvas.create_text(screen_width // 2, screen_height // 2 + 60, text=last_message_pt, font=custom_font3, fill="white")
+    else:
+        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_en, font=custom_font1, fill="white")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_en, font=custom_font2, fill="white")
+        canvas.create_text(screen_width // 2, screen_height // 2 + 60, text=last_message_en, font=custom_font3, fill="white")
+
+
 
 def next_question():
     global current_question
+
     if current_question < len(questions) - 1:
         current_question += 1
         show_question(questions[current_question], answers[current_question], current_question)
     else:
         show_final_message()
-
 def start_quiz(language):
     global questions, answers, correct_answers, correct_messages, incorrect_messages, message_after_reply
     current_question = 0  # Reset the current question index
@@ -371,7 +436,8 @@ def create_keyboard(root, canvas):
     button_fg = 'black'
 
     # Define a fonte dos botões
-    button_font = ("Helvetica", 12, "bold")
+
+    button_font = tkFont.Font(family="FedEx Sans", size=12, weight='bold')
 
     # Itera sobre a lista de teclas para criar os botões do teclado
     for i, key in enumerate(keys):
@@ -425,7 +491,7 @@ def show_registration_form(language):
     labels = ["Nome e Sobrenome:", "Email:", "Celular:", "Cidade:", "UF:", "Empresa:", "Segmento:", "CNPJ:"]
     labels_en = ["Name and Last Name:", "Email:", "Phone:", "City:", "State:", "Company:", "Segment:", "CNPJ:"]
     y_positions = [200, 250, 300, 350, 350, 400, 400, 450]
-
+    custom_font = tkFont.Font(family="FedEx Sans", size=16)
     entries = []
     for idx, label in enumerate(labels):
         placeholder_text = labels[idx] if language == "pt" else labels_en[idx]
@@ -439,7 +505,7 @@ def show_registration_form(language):
             x2, y2 = screen_width // 2 + 377, y_positions[idx] + 22  # ponto finaal
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=1, fill='white')
 
-            entry = tk.Entry(root, font=("Helvetica", 18), width=50, fg="grey", bg='white', bd=0)
+            entry = tk.Entry(root, font=custom_font, width=50, fg="grey", bg='white', bd=0)
             entry.insert(0, placeholder_text)
             entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
             entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
@@ -456,7 +522,7 @@ def show_registration_form(language):
                 x2, y2 = screen_width // 2 + 22, y_positions[idx] + 22  # ponto finaal
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=1, fill='white')
 
-                entry = tk.Entry(root, font=("Helvetica", 18), width=26, fg="grey", bg='white', bd=0)
+                entry = tk.Entry(root, font=custom_font, width=26, fg="grey", bg='white', bd=0)
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
@@ -472,7 +538,7 @@ def show_registration_form(language):
                 x2, y2 = screen_width // 2 + 377, y_positions[idx] + 22  # ponto finaal
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=1, fill='white')
 
-                entry = tk.Entry(root, font=("Helvetica", 18), width=22, fg="grey", bg='white', bd=0)
+                entry = tk.Entry(root, font=custom_font, width=22, fg="grey", bg='white', bd=0)
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
@@ -483,11 +549,12 @@ def show_registration_form(language):
 
     name_entry, email_entry, phone_entry, city_entry, uf_entry, company_entry, cnpj_entry, segment_entry = entries
 
-    x1, y1 = screen_width // 3 - 24 - 15, 1150 - 55  # Inicio do preto
-    x2, y2 = screen_width // 2 + 205 + 15, 1150 + 56  # Final do preto
+    x1, y1 = screen_width // 3 - 24 - 25, 1150 - 65  # Inicio do preto
+    x2, y2 = screen_width // 2 + 205 + 25, 1150 + 66  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
 
-    register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START", font=("Helvetica", 35),
+    custom_font = tkFont.Font(family="FedEx Sans", size=35)
+    register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START", font=custom_font,
                                 command=save_registration_data, fg="white", bd=0, bg="black", width=15, height=1)
     canvas.create_window(screen_width // 2, 1150, window=register_button, anchor="center")
 
@@ -525,17 +592,19 @@ def show_language_selection():
     canvas.create_image(screen_width // 2, 200, image=logo_photo, anchor="center")
 
     x1, y1 = screen_width // 6 - 20, screen_height // 4 + 30  # Inicio do preto
-    x2, y2 = screen_width // 2 + 365, screen_height // 4 + 170  # Final do preto
+    x2, y2 = screen_width // 2 + 375, screen_height // 4 + 170  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
 
-    pt_button = tk.Button(root, text="PORTUGUÊS", font=("Helvetica", 45), bd=0, command=lambda: show_registration_form("pt"), fg="white", bg="black", width=20, height=1)
+    custom_font = tkFont.Font(family="FedEx Sans", size=45)
+
+    pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0, command=lambda: show_registration_form("pt"), fg="white", bg="black", width=20, height=1)
     pt_button_window = canvas.create_window(screen_width//2, screen_height//4 + 100, anchor="center", window=pt_button)
 
     x1, y1 = screen_width // 6 - 20, screen_height // 4 + 230  # Inicio do preto
-    x2, y2 = screen_width // 2 + 365, screen_height // 4 + 370  # Final do preto
+    x2, y2 = screen_width // 2 + 375, screen_height // 4 + 370  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
 
-    en_button = tk.Button(root, text="ENGLISH", font=("Helvetica", 45), bd=0, command=lambda: show_registration_form("en"), fg="white", bg="black", width=20, height=1)
+    en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0, command=lambda: show_registration_form("en"), fg="white", bg="black", width=20, height=1)
     en_button_window = canvas.create_window(screen_width//2, screen_height//4 + 300, anchor="center", window=en_button)
     root.mainloop()
 
@@ -565,7 +634,7 @@ canvas.pack(fill="both", expand=True)
 canvas.create_image(0, 0, image=background_photo, anchor="nw")
 
 # Adicionar texto RFID no canvas
-rfid_text = canvas.create_text(screen_width//2, screen_height - 50, text="RFID Data: ", font=("Helvetica", 24), fill="black")
+rfid_text = canvas.create_text(screen_width//2, screen_height - 50, text="RFID Data: ", font=("FedEx Sans", 24), fill="black")
 
 # Lista de perguntas, respostas e respostas corretas (vazio inicialmente)
 questions = []
