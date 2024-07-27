@@ -40,7 +40,6 @@ def reset_timer():
         root.after_cancel(inactivity_timer)
     inactivity_timer = root.after(1000, update_inactivity_timer)
 
-
 #---------------------------------------------------------
 
 def place_on_first_monitor(root):

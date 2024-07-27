@@ -6,6 +6,7 @@ import threading
 from screeninfo import get_monitors
 import pandas as pd
 import os
+import re
 
 # Configuração da porta serial
 port = 'COM5'
@@ -15,23 +16,28 @@ current_question = 0
 current_answer = 0
 answers = []
 current_hits = 0
-time_left = 60  # Tempo inicial de 1 minuto (60 segundos)
+time_left = 120  # Tempo inicial
 is_paused = False
+stop_time_var = False
 
 inactivity_timer = None
 inactivity_timeout = 15000
 time_remaining = inactivity_timeout // 1000  # Tempo restante em segundos
 
+rfid_allowed = False
 
-#------------------------- ociosidade --------------------
+# ------------------------- ociosidade --------------------
 def update_inactivity_timer():
-    global time_remaining, inactivity_timer, inactivity_timeout
-    if time_remaining > 0:
-        print(f"Tempo restante para inatividade: {time_remaining} segundos")
-        time_remaining -= 1
-        inactivity_timer = root.after(1000, update_inactivity_timer)
+    global time_remaining, inactivity_timer, inactivity_timeout, stop_time_var
+    if stop_time_var is False:
+        if time_remaining > 0:
+            print(f"Tempo restante para inatividade: {time_remaining} segundos")
+            time_remaining -= 1
+            inactivity_timer = root.after(1000, update_inactivity_timer)
+        else:
+            show_rest_screen()
     else:
-        show_rest_screen()
+        pass
 
 def reset_timer():
     global inactivity_timer, time_remaining
@@ -40,8 +46,30 @@ def reset_timer():
         root.after_cancel(inactivity_timer)
     inactivity_timer = root.after(1000, update_inactivity_timer)
 
+def stop_time():
+    global inactivity_timer, time_remaining, stop_time_var
+    stop_time_var = True
 
-#---------------------------------------------------------
+def Start_time_after_all():
+    global inactivity_timer, time_remaining, stop_time_var
+    inactivity_timer = None
+    inactivity_timeout = 15000
+    time_remaining = inactivity_timeout // 1000  # Tempo restante em segundos
+    stop_time_var = False
+
+# ---------------------------------------------------------
+
+def place_on_second_monitor(root):
+    monitors = get_monitors()
+    if len(monitors) > 1:
+        second_monitor = monitors[0]
+        root.geometry(f'{second_monitor.width}x{second_monitor.height}+{second_monitor.x}+{second_monitor.y}')
+        root.update_idletasks()
+    else:
+        print("Apenas um monitor detectado. Não é possível colocar a janela no segundo monitor.")
+
+
+
 
 def place_on_first_monitor(root):
     monitors = get_monitors()
@@ -51,14 +79,6 @@ def place_on_first_monitor(root):
     else:
         print("Nenhum monitor detectado. Não é possível colocar a janela no primeiro monitor.")
 
-def place_on_second_monitor(root):
-    monitors = get_monitors()
-    if len(monitors) > 1:
-        second_monitor = monitors[1]
-        root.geometry(f'{second_monitor.width}x{second_monitor.height}+{second_monitor.x}+{second_monitor.y}')
-    else:
-        print("Apenas um monitor detectado. Não é possível colocar a janela no segundo monitor.")
-
 def change_answer_bg_color(answer_index, temp_color):
     canvas.itemconfig(answer_bg_ids[answer_index], fill=temp_color)
     delay(2000)
@@ -67,19 +87,19 @@ def change_answer_bg_color(answer_index, temp_color):
 def update_timer():
     global time_left, is_paused
     if not is_paused:
-        print("tempo normal")
         if time_left > 0:
             time_left -= 1
+            print(time_left)
             canvas.itemconfig(timer_text_id, text=f'Tempo: {time_left}s')
             root.after(1000, update_timer)
         else:
             show_final_message(in_time=False)
     else:
         print("Pausado")
+
 def delay(ms):
     root.after(ms)
     root.update()
-
 
 def resume_timer():
     global is_paused
@@ -105,7 +125,8 @@ def show_incorrect_message(question_index):
     change_answer_bg_color(current_answer - 1, "red")  # Mudar a cor para vermelho
 
 def read_rfid():
-    global rfid_data, current_question, current_answer, current_hits
+    global rfid_data, current_question, current_answer, current_hits, rfid_allowed
+
     try:
         with serial.Serial(port, baud_rate, timeout=1) as ser:
             while True:
@@ -113,40 +134,27 @@ def read_rfid():
                     rfid_data = ser.readline().decode('utf-8').strip().upper()
                     print(f"Tag RFID detectada: {rfid_data}")
                     cleaned_rfid_data = rfid_data.replace(" ", "").upper()
-                    print(cleaned_rfid_data)
 
-                    if cleaned_rfid_data == "UIDTAG:0429D495BE2A81":
-                        print("Resposta 1")
-                        current_answer = 1
+                    if rfid_allowed:  # Verificar se a leitura é permitida
+                        if cleaned_rfid_data == "UIDTAG:0429D495BE2A81":
+                            current_answer = 1
+                        elif cleaned_rfid_data == "UIDTAG:0448CD95BE2A81":
+                            current_answer = 2
+                        elif cleaned_rfid_data == "UIDTAG:0417DA95BE2A81":
+                            current_answer = 3
+                        elif cleaned_rfid_data == "UIDTAG:04FFDF95BE2A81":
+                            current_answer = 4
 
-                    elif cleaned_rfid_data == "UIDTAG:0448CD95BE2A81":
-                        print("Resposta 2")
-                        current_answer = 2
-                    elif cleaned_rfid_data == "UIDTAG:0417DA95BE2A81":
-                        print("Resposta 3")
-                        current_answer = 3
+                        if current_question < len(correct_answers) and current_answer == correct_answers[
+                            current_question]:
+                            current_hits += 1
+                            show_correct_message(current_question)
+                        elif current_question < len(correct_answers) and current_answer != correct_answers[
+                            current_question]:
+                            show_incorrect_message(current_question)
 
-                    elif cleaned_rfid_data == "UIDTAG:04FFDF95BE2A81":
-                        print("Resposta 4")
-                        current_answer = 4
-
-                    print(current_question)
-                    print(correct_answers)
-                    print(rfid_data)
-                    print("current_hits")
-                    print(current_hits)
-
-                    if current_question < len(correct_answers) and current_answer == correct_answers[current_question]:
-                        print(f"Resposta correta: {rfid_data}")
-                        rfid_data = ""
-                        current_hits += 1
-                        print(current_hits)
-                        show_correct_message(current_question)
-                    elif current_question < len(correct_answers) and current_answer != correct_answers[current_question]:
-                        print(f"Resposta incorreta: {rfid_data}")
-                        show_incorrect_message(current_question)
-                        rfid_data = ""
-
+                        rfid_data = ""  # Limpar a leitura após processar
+                        rfid_allowed = False  # Bloquear leituras adicionais até a próxima pergunta
     except serial.SerialException as e:
         print(f"Erro na comunicação serial: {e}")
 
@@ -156,32 +164,33 @@ def update_rfid_label():
         canvas.itemconfig(rfid_text, text=f"RFID Data: {rfid_data}")
     root.after(1000, update_rfid_label)
 
-
 def create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
     """Cria um retângulo arredondado no canvas."""
-    points = [x1+radius, y1,
-              x1+radius, y1,
-              x2-radius, y1,
-              x2-radius, y1,
+    points = [x1 + radius, y1,
+              x1 + radius, y1,
+              x2 - radius, y1,
+              x2 - radius, y1,
               x2, y1,
-              x2, y1+radius,
-              x2, y1+radius,
-              x2, y2-radius,
-              x2, y2-radius,
+              x2, y1 + radius,
+              x2, y1 + radius,
+              x2, y2 - radius,
+              x2, y2 - radius,
               x2, y2,
-              x2-radius, y2,
-              x2-radius, y2,
-              x1+radius, y2,
-              x1+radius, y2,
+              x2 - radius, y2,
+              x2 - radius, y2,
+              x1 + radius, y2,
+              x1 + radius, y2,
               x1, y2,
-              x1, y2-radius,
-              x1, y2-radius,
-              x1, y1+radius,
-              x1, y1+radius,
+              x1, y2 - radius,
+              x1, y2 - radius,
+              x1, y1 + radius,
+              x1, y1 + radius,
               x1, y1]
     return canvas.create_polygon(points, **kwargs, smooth=True)
-def show_question(question, possible_answers, current_question):
-    global logo_img, logo_photo, background_photo, question_text_id, answer_text_ids, answer_bg_ids, timer_text_id
+
+def show_question(question, possible_answers, current_question, in_weight):
+    global logo_img, logo_photo, background_photo, question_text_id, answer_text_ids, answer_bg_ids, timer_text_id, rfid_allowed, boximg, logo_photo_boximg
+    stop_time()
     is_paused = False
     canvas.delete("all")
     answer_text_ids = []  # Resetar a lista de IDs das respostas
@@ -196,26 +205,54 @@ def show_question(question, possible_answers, current_question):
 
     custom_font1 = tkFont.Font(family="FedEx Sans", size=18)
     custom_font2 = tkFont.Font(family="FedEx Sans", size=24)
+    custom_font3 = tkFont.Font(family="FedEx Sans", size=20)
+    bold_font = tkFont.Font(family="FedEx Sans", size=20, weight='bold')
 
-    timer_text_id = canvas.create_text(screen_width - 200, 152, text=f'Tempo: {time_left}s', font=custom_font1, width=900, fill="white")
+    timer_text_id = canvas.create_text(screen_width - 150, 152, text=f'Tempo: {time_left}s', font=custom_font1,
+                                       width=900, fill="black")
 
     x1, y1 = 50, screen_height // 5  # inicio do preto
     x2, y2 = screen_width - 50, screen_height // 3  # Final do preto
-    create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
+    create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='white', width=2, fill='white')
 
-    question_text_id = canvas.create_text(screen_width - (screen_width - 70), screen_height // 4, text=question, font=custom_font2, width=900,
-                       fill="white", anchor="w")
+    question_text_id = canvas.create_text(screen_width - (screen_width - 70), screen_height // 4, text=question,
+                                          font=custom_font2, width=900, fill="black", anchor="w")
+
     for idx, answer in enumerate(possible_answers):
         x1, y1 = 50, screen_height // 4 + 250 + idx * 150  # inicio do preto
         x2, y2 = screen_width - 50, screen_height // 4 + 350 + idx * 150  # Final do preto
-        bg_id = create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
+        bg_id = create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='white', width=2, fill='white')
         answer_bg_ids.append(bg_id)
 
-        answer_text_id = canvas.create_text(screen_width - (screen_width - 70), screen_height // 4 + 300 + idx * 150, text=answer, font=custom_font2,
-                           width=900, fill="white", anchor="w")
-        answer_text_ids.append(answer_text_id)
-def show_overlay_message(message, sub_message, is_correct):
+        # Criação do texto em duas partes: in_weight e resposta
+        weight_text = canvas.create_text(screen_width - (screen_width - 70), screen_height // 4 + 300 + idx * 150,
+                                         text=in_weight[idx], font=bold_font, fill="black", anchor="w")
+        answer_text = canvas.create_text(screen_width - (screen_width - 70) + 180, screen_height // 4 + 300 + idx * 150,
+                                         text=answer, font=custom_font2, fill="black", anchor="w")
 
+        answer_text_ids.append((weight_text, answer_text))
+
+    #delay(5000)
+    root.after(5000, lambda: set_rfid_allowed(True))  # Permitir leitura RFID após x segundo
+    root.after(5100, show_box_image)
+
+def show_box_image():
+    print()
+    global boximg, logo_photo_boximg
+    try:
+        boximg = Image.open("Box.png").convert("RGBA")
+        boximg = boximg.resize((500, 600), Image.Resampling.LANCZOS)
+        logo_photo_boximg = ImageTk.PhotoImage(boximg)
+        canvas.create_image(screen_width // 2, screen_height // 2 + (screen_height // 4), image=logo_photo_boximg, anchor="center")
+    except Exception as e:
+        print(f"Erro ao carregar a imagem: {e}")
+
+
+def set_rfid_allowed(state):
+    global rfid_allowed
+    rfid_allowed = state
+
+def show_overlay_message(message, sub_message, is_correct):
     overlay = tk.Toplevel(root)
     overlay.geometry(f'{screen_width}x{screen_height}+0+0')
     overlay.overrideredirect(1)
@@ -234,32 +271,30 @@ def show_overlay_message(message, sub_message, is_correct):
                                fill="white", width=text_width)
     root.after(5000, next_question)
     root.after(5000, overlay.destroy)
-    root.after(5000, resume_timer)
+    if current_question < 4:
+        print("AINDA DENTRO DO GAME")
+        root.after(5000, resume_timer)
 
 def show_final_message(in_time):
-    global logo_img, logo_photo
+    global logo_img, logo_photo, current_hits, current_question, time_left, is_paused
+    is_paused = True  # Pausar o tempo ao entrar na tela da mensagem final
+    stop_time()  # Parar o temporizador de inatividade
     canvas.delete("all")
+
     if current_hits > 3 and in_time is True:
-        main_message_pt = "Parabéns!"
-        main_message_en = "Congratulations!"
+        main_message_pt = "PARABÉNS!"
+        main_message_en = "CONGRATULATIONS!"
         sub_message_pt = f"Desempenho {current_hits}/5"
         sub_message_en = f"Performance {current_hits}/5"
         last_message_pt = f"RETIRE SEU BRINDE"
         last_message_en = f"COLLECT YOUR GIFT"
-    elif in_time is False:
-        main_message_pt = "Que pena!"
-        main_message_en = "What a pity!"
-        sub_message_pt = f"Desempenho {current_hits}/5"
-        sub_message_en = f"Performance {current_hits}/5"
-        last_message_pt = f"O TEMPO ACABOU"
-        last_message_en = f"THE TIME IS OVER"
     else:
-        main_message_pt = "Que pena!"
-        main_message_en = "What a pity!"
+        main_message_pt = "QUE PENA, NÂO FOI DESSA VEZ"
+        main_message_en = "What a pity, IT WAS NOT THIS TIME"
         sub_message_pt = f"Desempenho {current_hits}/5"
         sub_message_en = f"Performance {current_hits}/5"
-        last_message_pt = f"NÂO FOI DESSA VEZ"
-        last_message_en = f"IT WAS NOT THIS TIME"
+        last_message_pt = None
+        last_message_en = None
 
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
 
@@ -268,31 +303,66 @@ def show_final_message(in_time):
     logo_photo = ImageTk.PhotoImage(logo_img)
     canvas.create_image(screen_width // 2, 100, image=logo_photo, anchor="center")
 
-    custom_font1 = tkFont.Font(family="FedEx Sans", size=60)
+    custom_font1 = tkFont.Font(family="FedEx Sans", size=40)
     custom_font2 = tkFont.Font(family="FedEx Sans", size=24)
     custom_font3 = tkFont.Font(family="FedEx Sans", size=70)
 
     if selected_language == "pt":
-        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_pt, font=custom_font1, fill="white")
-        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_pt, font=custom_font2, fill="white")
-        canvas.create_text(screen_width // 2, screen_height // 2 + 60, text=last_message_pt, font=custom_font3, fill="white")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_pt, font=custom_font1,
+                           fill="black")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_pt, font=custom_font2,
+                           fill="black")
+
+        if current_hits > 3 and in_time is True:
+            x1, y1 = screen_width // 2 - (screen_width // 4) + 100, screen_height // 2 + 125  # Inicio do preto
+            x2, y2 = screen_width // 2 + (screen_width // 4) - 100, screen_height // 2 + 150  # Final do preto
+            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='#4D148C', width=2, fill='#4D148C')
+
+            canvas.create_text(screen_width // 2, screen_height // 2 + 160, text=last_message_pt, font=custom_font3,
+                               fill="black")
     else:
-        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_en, font=custom_font1, fill="white")
-        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_en, font=custom_font2, fill="white")
-        canvas.create_text(screen_width // 2, screen_height // 2 + 60, text=last_message_en, font=custom_font3, fill="white")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_en, font=custom_font1,
+                           fill="black")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_en, font=custom_font2,
+                           fill="black")
+
+        if current_hits > 3 and in_time is True:
+            x1, y1 = screen_width // 2 - (screen_width // 4) + 100, screen_height // 2 + 125  # Inicio do preto
+            x2, y2 = screen_width // 2 + (screen_width // 4) - 100, screen_height // 2 + 150  # Final do preto
+            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='#4D148C', width=2, fill='#4D148C')
+
+            canvas.create_text(screen_width // 2, screen_height // 2 + 160, text=last_message_en, font=custom_font3,
+                               fill="black")
+
+    # Adiciona um evento para reiniciar o quiz ao clicar em qualquer parte da tela
+    canvas.bind("<Button-1>", restart_quiz)
+
+def restart_quiz(event=None):
+    global current_question, current_hits, time_left, rfid_data, is_paused, stop_time_var, rfid_allowed
+    current_question = 0
+    current_hits = 0
+    time_left = 120  # Reinicia o temporizador para 120 segundos
+    rfid_data = ""
+    is_paused = False
+    stop_time_var = False
+    rfid_allowed = False
+
+    reset_timer()  # Reiniciar o temporizador de inatividade
+    show_language_selection()  # Mostrar a tela de seleção de idioma
 
 def next_question():
     global current_question
     if current_question < len(questions) - 1:
         current_question += 1
-        show_question(questions[current_question], answers[current_question], current_question)
+        show_question(questions[current_question], answers[current_question], current_question, in_weight)
     else:
         show_final_message(in_time=True)
 
 def start_quiz(language):
-    global questions, answers, correct_answers, correct_messages, incorrect_messages, message_after_reply, time_left
+    global questions, answers, correct_answers, correct_messages, incorrect_messages, message_after_reply, time_left, in_weight, current_question, current_hits
     current_question = 0
-    time_left = 60  # Reinicia o temporizador para 60 segundos
+    current_hits = 0
+    time_left = 120  # Reinicia o temporizador para 120 segundos
     if language == "pt":
         questions = [
             "1. A FedEx Express é hoje a maior empresa de entregas rápidas do planeta. Quais serviços ela oferece no Brasil?",
@@ -333,6 +403,13 @@ def start_quiz(language):
             "A meta da FedEx é tornar as operações neutras em carbono até 2040, por meio de diversas iniciativas que inclui: eletrificação de veículos, combustíveis sustentáveis, instalações eficientes, entre outras."
         ]
         correct_answers = [4, 1, 4, 4, 3]
+
+        in_weight = [
+            "Box FedEx 1: ",
+            "Box FedEx 2: ",
+            "Box FedEx 3: ",
+            "Box FedEx 4: ",
+        ]
     else:
         questions = [
             "1. FedEx Express is currently the largest express delivery company on the planet. What services does FedEx offer in Brazil?",
@@ -376,8 +453,18 @@ def start_quiz(language):
 
         correct_answers = [4, 1, 4, 4, 3]
 
-    show_question(questions[current_question], answers[current_question], current_question)
+        in_weight = [
+            "Box FedEx 1: ",
+            "Box FedEx 2: ",
+            "Box FedEx 3: ",
+            "Box FedEx 4: ",
+        ]
+    show_question(questions[current_question], answers[current_question], current_question, in_weight)
     update_timer()
+
+def back_PTEN():
+    selected_language = ""
+    show_language_selection()
 
 def save_registration_data():
     data = {
@@ -399,7 +486,16 @@ def save_registration_data():
         new_df = pd.DataFrame([data])
 
     new_df.to_excel(file_path, index=False)
+
     start_quiz(selected_language)
+
+def on_entry_click(event, placeholder_text):
+    global active_entry
+    active_entry = event.widget
+    if event.widget.get() == placeholder_text:
+        event.widget.delete(0, "end")
+        event.widget.config(fg="black")
+
 
 def on_entry_click(event, placeholder_text):
     global active_entry
@@ -410,6 +506,10 @@ def on_entry_click(event, placeholder_text):
 
 def on_focusout(event, placeholder_text):
     if event.widget.get() == "":
+        event.widget.insert(0, placeholder_text)
+        event.widget.config(fg="grey")
+    elif event.widget.get().strip() == placeholder_text:
+        event.widget.delete(0, "end")
         event.widget.insert(0, placeholder_text)
         event.widget.config(fg="grey")
 
@@ -424,7 +524,6 @@ def backspace_pressed():
         active_entry.delete(len(active_entry.get()) - 1, tk.END)
     else:
         pass
-
 def create_keyboard(root, canvas):
     keys = [
         '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
@@ -439,7 +538,7 @@ def create_keyboard(root, canvas):
     button_height = 2
     button_bg = '#d3d3d3'
     button_fg = 'black'
-    button_font = tkFont.Font(family="FedEx Sans", size=12, weight='bold')
+    button_font = tkFont.Font(family="FedEx Sans", size=10, weight='bold')
 
     for i, key in enumerate(keys):
         row = i // 10
@@ -457,14 +556,107 @@ def create_keyboard(root, canvas):
         canvas.create_window(x, y, window=button)
     space_button = tk.Button(root, text="Espaço", font=button_font,
                              command=lambda: key_pressed(' '),
-                             width=86, height=button_height,
+                             width=95, height=button_height,
                              bg=button_bg, fg=button_fg, bd=1, relief='raised')
     canvas.create_window(screen_width // 2, y_offset + 245, window=space_button)
+
+
+def formatar_telefone(event=None):
+    telefone = phone_entry.get().replace("(", "").replace(")", "").replace("-", "").replace(" ", "").replace("+", "")
+    telefone = telefone[:13]  # Limitar a quantidade de dígitos (2 para código do país + 2 para DDD + 9 para o número)
+    telefone_formatado = ""
+
+    if len(telefone) > 0:
+        telefone_formatado = "+"
+    if len(telefone) > 2:
+        telefone_formatado += telefone[:2] + " "
+    if len(telefone) > 4:
+        telefone_formatado += "(" + telefone[2:4] + ") "
+    if len(telefone) > 9:
+        telefone_formatado += telefone[4:9] + "-" + telefone[9:]
+    elif len(telefone) > 4:
+        telefone_formatado += telefone[4:]
+
+    phone_entry.delete(0, tk.END)
+    phone_entry.insert(0, telefone_formatado)
+
+    # Verificar se o campo está vazio ou igual ao placeholder_text
+    if not telefone or telefone_formatado.strip() == phone_entry.placeholder_text:
+        phone_entry.insert(0, phone_entry.placeholder_text)
+        phone_entry.config(fg="grey")
+def formatar_e_validar_cnpj(event=None):
+    cnpj = cnpj_entry.get().replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
+
+    if cnpj == "99999999999999":
+        cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
+        cnpj_entry.delete(0, tk.END)
+        cnpj_entry.insert(0, cnpj_formatado)
+        return
+
+    if not validar_cnpj(cnpj):
+        cnpj_entry.delete(0, tk.END)
+        cnpj_entry.insert(0, cnpj_entry.placeholder_text)
+        cnpj_entry.config(fg="grey")
+        return
+
+    cnpj = cnpj[:14]  # Limitar a quantidade de dígitos do CNPJ
+    cnpj_formatado = ""
+
+    if len(cnpj) > 2:
+        cnpj_formatado += cnpj[:2] + "."
+    if len(cnpj) > 5:
+        cnpj_formatado += cnpj[2:5] + "."
+    if len(cnpj) > 8:
+        cnpj_formatado += cnpj[5:8] + "/"
+    if len(cnpj) > 12:
+        cnpj_formatado += cnpj[8:12] + "-"
+    if len(cnpj) > 0:
+        cnpj_formatado += cnpj[12:]
+
+    cnpj_entry.delete(0, tk.END)
+    cnpj_entry.insert(0, cnpj_formatado)
+
+    # Verificar se o campo está vazio ou igual ao placeholder_text
+    if not cnpj or cnpj_formatado.strip() == cnpj_entry.placeholder_text:
+        cnpj_entry.insert(0, cnpj_entry.placeholder_text)
+        cnpj_entry.config(fg="grey")
+
+
+def validar_cnpj(cnpj):
+    # Remover caracteres não numéricos
+    cnpj = re.sub(r'\D', '', cnpj)
+
+    # Verificar se o CNPJ tem 14 dígitos
+    if len(cnpj) != 14:
+        return False
+
+    # Verificar se todos os dígitos são iguais
+    if cnpj == cnpj[0] * 14:
+        return False
+
+    # Calcular o primeiro dígito verificador
+    def calcular_digito(cnpj, peso):
+        soma = sum(int(cnpj[i]) * peso[i] for i in range(len(cnpj)))
+        resto = soma % 11
+        return 0 if resto < 2 else 11 - resto
+
+    # Pesos para os cálculos dos dígitos verificadores
+    peso1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    peso2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+
+    # Calcular dígitos verificadores
+    primeiro_digito = calcular_digito(cnpj[:12], peso1)
+    segundo_digito = calcular_digito(cnpj[:12] + str(primeiro_digito), peso2)
+
+    # Verificar se os dígitos verificadores estão corretos
+    return cnpj[-2:] == f"{primeiro_digito}{segundo_digito}"
+
+
 
 def show_registration_form(language):
     global selected_language, name_entry, email_entry, phone_entry, city_entry, uf_entry
     global company_entry, cnpj_entry, segment_entry, logo_img, logo_photo, active_entry
-
+    stop_time()
     selected_language = language
     canvas.delete("all")
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
@@ -475,7 +667,7 @@ def show_registration_form(language):
     canvas.create_image(screen_width // 2, 100, image=logo_photo, anchor="center")
 
     labels = ["Nome e Sobrenome:", "Email:", "Celular:", "Cidade:", "UF:", "Empresa:", "Segmento:", "CNPJ:"]
-    labels_en = ["Name and Last Name:", "Email:", "Phone:", "City:", "State:", "Company:", "Segment:", "CNPJ:"]
+    labels_en = ["Name and Last Name:", "Email:", "Phone:", "City:", "State:", "Company:", "Segment:", "Business ID:"]
     y_positions = [200, 250, 300, 350, 350, 400, 400, 450]
     custom_font = tkFont.Font(family="FedEx Sans", size=16)
     entries = []
@@ -492,6 +684,11 @@ def show_registration_form(language):
             entry.insert(0, placeholder_text)
             entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
             entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
+            if idx == 2 and language == "pt":  # Index 2 é o campo de telefone (Celular)
+                entry.bind("<FocusOut>", formatar_telefone)
+            if idx == 7 and language == "pt":  # Index 7 é o campo de CNPJ
+                entry.bind("<FocusOut>", formatar_e_validar_cnpj)
+
             canvas.create_window((x1 + x2) // 2 - 40, (y1 + y2) // 2, window=entry)
             entries.append(entry)
         else:
@@ -521,15 +718,30 @@ def show_registration_form(language):
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
                 canvas.create_window((x1 + x2) // 2 - 10, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
-    name_entry, email_entry, phone_entry, city_entry, uf_entry, company_entry, cnpj_entry, segment_entry = entries
-    x1, y1 = screen_width // 3 - 24 - 25, 1150 - 65  # Inicio do preto
-    x2, y2 = screen_width // 2 + 205 + 25, 1150 + 66  # Final do preto
+
+    name_entry, email_entry, phone_entry, city_entry, uf_entry, company_entry, segment_entry, cnpj_entry = entries
+
+    # Definir placeholder_text para phone_entry e cnpj_entry
+    phone_entry.placeholder_text = "Celular:" if language == "pt" else "Phone:"
+    cnpj_entry.placeholder_text = "CNPJ:" if language == "pt" else "Business ID:"
+
+    x1, y1 = screen_width // 3 - 24 - 25 + (screen_width // 4), 1150 - 65  # Inicio do preto
+    x2, y2 = screen_width // 2 + 205 + 25 + (screen_width // 4), 1150 + 66  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="FedEx Sans", size=35)
     register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START", font=custom_font,
                                 command=save_registration_data, fg="white", bd=0, bg="black", width=15, height=1)
-    canvas.create_window(screen_width // 2, 1150, window=register_button, anchor="center")
+    canvas.create_window(screen_width // 2 + (screen_width // 4), 1150, window=register_button, anchor="center")
+
+    x1, y1 = screen_width // 3 - 24 - 25 - (screen_width // 4), 1150 - 65  # Inicio do preto
+    x2, y2 = screen_width // 2 + 205 + 25 - (screen_width // 4), 1150 + 66  # Final do preto
+    create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
+    back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK", font=custom_font,
+                            command=back_PTEN, fg="white", bd=0, bg="black", width=15, height=1)
+    canvas.create_window(screen_width // 2 - (screen_width // 4), 1150, window=back_button, anchor="center")
+
     create_keyboard(root, canvas)
+
 
 def show_rest_screen():
     canvas.delete("all")
@@ -541,7 +753,6 @@ def show_rest_screen():
     canvas.create_image(screen_width // 2, screen_height // 2, image=logo_photo, anchor="center")
     canvas.bind("<Button-1>", lambda event: show_language_selection())
     root.mainloop()
-
 
 def show_language_selection():
     global inactivity_timer
@@ -556,16 +767,16 @@ def show_language_selection():
     logo_img = logo_img.resize((450, 125), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
     canvas.create_image(screen_width // 2, 200, image=logo_photo, anchor="center")
-    x1, y1 = screen_width // 6 - 20, screen_height // 4 + 30  # Inicio do preto
-    x2, y2 = screen_width // 2 + 375, screen_height // 4 + 170  # Final do preto
+    x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20  # Inicio do preto
+    x2, y2 = screen_width // 2 + 385, screen_height // 4 + 180  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="FedEx Sans", size=45)
     pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0, command=lambda: show_registration_form("pt"),
                           fg="white", bg="black", width=20, height=1)
     pt_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 100, anchor="center",
                                             window=pt_button)
-    x1, y1 = screen_width // 6 - 20, screen_height // 4 + 230  # Inicio do preto
-    x2, y2 = screen_width // 2 + 375, screen_height // 4 + 370  # Final do preto
+    x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220  # Inicio do preto
+    x2, y2 = screen_width // 2 + 385, screen_height // 4 + 380  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=20, outline='black', width=2, fill='black')
     en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0, command=lambda: show_registration_form("en"),
                           fg="white", bg="black", width=20, height=1)
@@ -579,24 +790,28 @@ def show_language_selection():
     en_button.bind("<Button-1>", on_interaction)
 
     reset_timer()
+    Start_time_after_all()  # Iniciar o temporizador de inatividade
     root.mainloop()
-
 
 # Configuração da interface gráfica
 root = tk.Tk()
 root.title("Quiz")
-place_on_first_monitor(root)
 root.attributes('-fullscreen', True)
+#place_on_second_monitor(root)  # Garantir que a janela ocupe toda a tela do segundo monitor
+
 background_image = Image.open("background.png")
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 background_image = background_image.resize((screen_width, screen_height), Image.LANCZOS)
 background_photo = ImageTk.PhotoImage(background_image)
+
 canvas = tk.Canvas(root, width=screen_width, height=screen_height)
 canvas.pack(fill="both", expand=True)
 canvas.create_image(0, 0, image=background_photo, anchor="nw")
-rfid_text = canvas.create_text(screen_width//2, screen_height - 50, text="RFID Data: ", font=("FedEx Sans", 24), fill="black")
-timer_text_id = canvas.create_text(screen_width - 200, 152, text=f'Tempo: {time_left}s', font=("FedEx Sans", 18), fill="white")
+rfid_text = canvas.create_text(screen_width // 2, screen_height - 50, text="RFID Data: ", font=("FedEx Sans", 24),
+                               fill="black")
+timer_text_id = canvas.create_text(screen_width - 150, 152, text=f'Tempo: {time_left}s', font=("FedEx Sans", 18),
+                                   fill="black")
 questions = []
 answers = []
 correct_answers = []

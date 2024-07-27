@@ -5,14 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c7b6794-6efa-4310-ace3-46b74bd75c2d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Quiz20.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz21.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz22.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz23.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz24.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz241.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz242.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz243.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz244.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz245.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz246.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz247.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz248.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz249.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz250.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/masktest.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Quiz19.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz19.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Quiz24.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz24.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Quiz241.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz241.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/background.png" beforeDir="false" afterPath="$PROJECT_DIR$/background.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fedex.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fedexLogo.png" beforeDir="false" afterPath="$PROJECT_DIR$/fedexLogo.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/registration_data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/registration_data.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -23,8 +31,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Python Script" />
         <option value="HTML File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -40,25 +48,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
-    &quot;Python.Quiz.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Quiz2.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Quiz9.executor&quot;: &quot;Run&quot;,
-    &quot;Python.main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/anabe/Documents/GitHub/Quiz_Fedex_Labace_2024&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "Python.Quiz.executor": "Run",
+    "Python.Quiz2.executor": "Run",
+    "Python.Quiz9.executor": "Run",
+    "Python.main.executor": "Run",
+    "Python.masktest.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "master",
+    "last_opened_file_path": "C:/Users/anabe/Documents/GitHub/Quiz_Fedex_Labace_2024"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\anabe\Documents\GitHub\Quiz_Fedex_Labace_2024" />
       <recent name="C:\Users\ferna\OneDrive\Documents\LabaceFedexQuiz\Quiz" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Quiz9">
+  <component name="RunManager" selected="Python.masktest">
     <configuration name="Quiz" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="Quiz" />
       <option name="ENV_FILES" value="" />
@@ -147,8 +156,31 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="masktest" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="Quiz" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/masktest.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.masktest" />
         <item itemvalue="Python.Quiz9" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.Quiz2" />
@@ -200,6 +232,30 @@
           <url>file://$PROJECT_DIR$/Quiz22.py</url>
           <line>47</line>
           <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz242.py</url>
+          <line>480</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz245.py</url>
+          <line>89</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz249.py</url>
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz250.py</url>
+          <line>790</line>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz250.py</url>
+          <line>791</line>
+          <option name="timeStamp" value="21" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
