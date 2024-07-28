@@ -549,7 +549,9 @@ def backspace_pressed():
         active_entry.delete(len(active_entry.get()) - 1, tk.END)
     else:
         pass
+
 def create_keyboard(root, canvas):
+    # Lista de teclas que serão exibidas no teclado
     keys = [
         '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
         'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
@@ -557,34 +559,56 @@ def create_keyboard(root, canvas):
         'Z', 'X', 'C', 'V', 'B', 'N', 'M', '-', '_', '@',
         'Backspace'
     ]
-    x_offset = screen_width // 8 + 10
-    y_offset = screen_height // 4
-    button_width = 7
-    button_height = 2
+
+    # Configuração inicial para a posição e aparência dos botões
+    x_offset = 281
+    y_offset = screen_height // 2.2
+    button_width = int(18)
+    button_height = 6
     button_bg = '#d3d3d3'
     button_fg = 'black'
     button_font = tkFont.Font(family="FedEx Sans", size=10, weight='bold')
+    button_spacing = 3  # Espaçamento horizontal entre as teclas
 
+    # Loop através de cada tecla na lista de keys
     for i, key in enumerate(keys):
+        # Determina a linha e coluna da tecla atual
         row = i // 10
         col = i % 10
-        x = x_offset + col * (button_width + 1) * 11
+
+
+
+        # Calcula a posição x e y do botão no canvas
+        x = x_offset + col * (button_width * 10 - button_spacing)
         y = y_offset + row * (button_height + 1) * 20
+
+        # Define a ação do botão; 'Backspace' tem uma ação especial
         if key == 'Backspace':
             command = backspace_pressed
-            key = "\u2190"
+            key = "\u2190"  # Símbolo de seta para a esquerda
         else:
             command = lambda k=key: key_pressed(k)
+
+        # Cria o botão com as configurações definidas e a ação associada
         button = tk.Button(root, text=key, font=button_font, command=command,
                            width=button_width, height=button_height,
                            bg=button_bg, fg=button_fg, bd=1, relief='raised')
+
+        # Posiciona o botão no canvas
         canvas.create_window(x, y, window=button)
+
+
+
+    #---------------------- Tecla de espaço ---------------------------------
+    space_button_width = int(screen_width // 10)
+    # Cria o botão de espaço separadamente, pois ele é maior e ocupa uma linha inteira
     space_button = tk.Button(root, text="Espaço", font=button_font,
                              command=lambda: key_pressed(' '),
-                             width=95, height=button_height,
+                             width=space_button_width, height=button_height,
                              bg=button_bg, fg=button_fg, bd=1, relief='raised')
-    canvas.create_window(screen_width // 2, y_offset + 245, window=space_button)
 
+    # Posiciona o botão de espaço no canvas
+    canvas.create_window(screen_width // 2, y_offset + (screen_height // 6), window=space_button)
 
 def formatar_telefone(event=None):
     telefone = phone_entry.get().replace("(", "").replace(")", "").replace("-", "").replace(" ", "").replace("+", "")
@@ -677,94 +701,145 @@ def validar_cnpj(cnpj):
     return cnpj[-2:] == f"{primeiro_digito}{segundo_digito}"
 
 
-
 def show_registration_form(language):
     global selected_language, name_entry, email_entry, phone_entry, city_entry, uf_entry
     global company_entry, cnpj_entry, segment_entry, logo_img, logo_photo, active_entry
+
+    # Para quando a função é chamada, o timer de inatividade é parado.
     stop_time()
+
+    # Define a linguagem selecionada (português ou inglês) conforme o parâmetro passado.
     selected_language = language
+
+    # Limpa todos os elementos no canvas.
     canvas.delete("all")
+
+    # Define a imagem de fundo.
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
 
+    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário.
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((300, 83), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
+
+    # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio.
     canvas.create_image(screen_width // 2, 100, image=logo_photo, anchor="center")
 
+    #----------------------------------- Formulario de registro ------------------------------
+    # Define os rótulos e suas versões em inglês.
     labels = ["Nome e Sobrenome:", "Email:", "Celular:", "Cidade:", "UF:", "Empresa:", "Segmento:", "CNPJ:"]
     labels_en = ["Name and Last Name:", "Email:", "Phone:", "City:", "State:", "Company:", "Segment:", "Business ID:"]
+
+    # Define a posição Y de cada rótulo.
     y_positions = [350, 450, 550, 650, 650, 750, 750, 850]
+
+    # Define a fonte personalizada.
     custom_font = tkFont.Font(family="FedEx Sans", size=20)
+
+    # Cria uma lista para armazenar os campos de entrada (entries).
     entries = []
+
+    # Loop para criar cada campo de entrada e seu respectivo rótulo.
     for idx, label in enumerate(labels):
+        # Define o texto do placeholder conforme a linguagem selecionada.
         placeholder_text = labels[idx] if language == "pt" else labels_en[idx]
+
+        # Se o índice não for 3, 4, 5 ou 6, cria um campo de entrada de tamanho maior.
         if idx != 3 and idx != 4 and idx != 5 and idx != 6:
-            x1, y1 = screen_width // 5 - 60, y_positions[idx] - 15  # inicio do preto
-            x2, y2 = screen_width // 2 + 480, y_positions[idx] + 45  # Final do preto
+            # Define a posição e dimensões da caixa ao redor do campo de entrada.
+            x1, y1 = screen_width // 5 - 60, y_positions[idx] - 15  # início do preto
+            x2, y2 = screen_width // 2 + 580, y_positions[idx] + 45  # Final do preto
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
             x1, y1 = screen_width // 5 - 57, y_positions[idx] - 12  # ponto inicial
-            x2, y2 = screen_width // 2 + 477, y_positions[idx] + 42  # ponto finaal
+            x2, y2 = screen_width // 2 + 577, y_positions[idx] + 42  # ponto final
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=1, fill='white')
-            entry = tk.Entry(root, font=custom_font, width=60, fg="grey", bg='white', bd=0)
+
+            # Cria o campo de entrada com um placeholder text, cor e largura definidas.
+            entry = tk.Entry(root, font=custom_font, width=80, fg="grey", bg='white', bd=0)
             entry.insert(0, placeholder_text)
+
+            # Adiciona eventos para quando o campo ganha ou perde o foco, para manipular o placeholder text.
             entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
             entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
+
+            # Adiciona eventos específicos para formatação de telefone e validação de CNPJ para os respectivos campos.
             if idx == 2 and language == "pt":  # Index 2 é o campo de telefone (Celular)
                 entry.bind("<FocusOut>", formatar_telefone)
             if idx == 7 and language == "pt":  # Index 7 é o campo de CNPJ
                 entry.bind("<FocusOut>", formatar_e_validar_cnpj)
 
+            # Posiciona o campo de entrada no canvas.
             canvas.create_window((x1 + x2) // 2 - 40, (y1 + y2) // 2, window=entry)
+            # Adiciona o campo de entrada à lista de entradas.
             entries.append(entry)
         else:
+            # Caso o índice seja 3, 4, 5 ou 6, cria um campo de entrada de tamanho menor.
             if idx == 3 or idx == 5:
                 x1, y1 = screen_width // 5 - 60, y_positions[idx] - 15  # ponto inicial
-                x2, y2 = screen_width // 2 + 80, y_positions[idx] + 45  # Final do preto
+                x2, y2 = screen_width // 2 + 180, y_positions[idx] + 45  # Final do preto
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=3, fill='black')
                 x1, y1 = screen_width // 5 - 57, y_positions[idx] - 12  # ponto inicial
-                x2, y2 = screen_width // 2 + 77, y_positions[idx] + 42  # ponto finaal
+                x2, y2 = screen_width // 2 + 177, y_positions[idx] + 42  # ponto final
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=1, fill='white')
-                entry = tk.Entry(root, font=custom_font, width=30, fg="grey", bg='white', bd=0)
+                entry = tk.Entry(root, font=custom_font, width=40, fg="grey", bg='white', bd=0)
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
                 canvas.create_window((x1 + x2) // 2 - 20, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
             else:
-                x1, y1 = screen_width // 2 + 110, y_positions[idx] - 15
-                x2, y2 = screen_width // 2 + 480, y_positions[idx] + 45  # Final do preto
+                x1, y1 = screen_width // 2 + 200, y_positions[idx] - 15
+                x2, y2 = screen_width // 2 + 580, y_positions[idx] + 45  # Final do preto
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
-                x1, y1 = screen_width // 2 + 113, y_positions[idx] - 12  # ponto inicial
-                x2, y2 = screen_width // 2 + 477, y_positions[idx] + 42  # ponto finaal
+                x1, y1 = screen_width // 2 + 203, y_positions[idx] - 12  # ponto inicial
+                x2, y2 = screen_width // 2 + 577, y_positions[idx] + 42  # ponto final
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=1, fill='white')
-                entry = tk.Entry(root, font=custom_font, width=30, fg="grey", bg='white', bd=0)
+                entry = tk.Entry(root, font=custom_font, width=40, fg="grey", bg='white', bd=0)
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
                 canvas.create_window((x1 + x2) // 2 - 10, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
 
+    # Atribui os campos de entrada às variáveis globais para serem acessíveis em outras partes do programa.
     name_entry, email_entry, phone_entry, city_entry, uf_entry, company_entry, segment_entry, cnpj_entry = entries
 
-    # Definir placeholder_text para phone_entry e cnpj_entry
+    # Define o placeholder_text para phone_entry e cnpj_entry.
     phone_entry.placeholder_text = "Celular:" if language == "pt" else "Phone:"
     cnpj_entry.placeholder_text = "CNPJ:" if language == "pt" else "Business ID:"
 
-    x1, y1 = screen_width // 3 - 24 - 25 + (screen_width // 4), 1450 - 65  # Inicio do preto
-    x2, y2 = screen_width // 2 + 205 + 25 + (screen_width // 4), 1450 + 66  # Final do preto
+    # ----------------------------------- Fim do Formulario de registro ------------------------------
+
+
+    # ----------------------------------- Botões de iniciar e voltar ---------------------------------
+    y_btn_position = screen_height // 2 + (screen_height // 4)
+
+    # Cria e posiciona o botão de "INICIAR"/"START" no canvas.
+    x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do preto
+    x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Final do preto
+
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="FedEx Sans", size=35)
+
     register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START", font=custom_font,
                                 command=save_registration_data, fg="white", bd=0, bg="black", width=15, height=1)
-    canvas.create_window(screen_width // 2 + (screen_width // 4), 1450, window=register_button, anchor="center")
+    canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25, window=register_button, anchor="center")
 
-    x1, y1 = screen_width // 3 - 24 - 25 - (screen_width // 4), 1450 - 65  # Inicio do preto
-    x2, y2 = screen_width // 2 + 205 + 25 - (screen_width // 4), 1450 + 66  # Final do preto
+    # Cria e posiciona o botão de "VOLTAR"/"BACK" no canvas.
+    x1, y1 = screen_width // 10, y_btn_position - 65  # Início do preto
+    x2, y2 = screen_width // 2.5, y_btn_position + 116  # Final do preto
+
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK", font=custom_font,
                             command=back_PTEN, fg="white", bd=0, bg="black", width=15, height=1)
-    canvas.create_window(screen_width // 2 - (screen_width // 4), 1450, window=back_button, anchor="center")
+    canvas.create_window(screen_width // 2 - (screen_width // 4), y_btn_position + 25, window=back_button, anchor="center")
 
+    print("largura inicial do botao voltar")
+    print(screen_width // 2 - (screen_width // 4))
+
+    # ----------------------------------- Fim de iniciar e voltar ---------------------------------
+
+    # Cria o teclado virtual para entrada de dados.
     create_keyboard(root, canvas)
 
 
