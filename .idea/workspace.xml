@@ -5,11 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c7b6794-6efa-4310-ace3-46b74bd75c2d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Quiz253.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz254.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz255.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz256.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Quiz252.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz252.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/registration_data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/registration_data.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -247,6 +244,16 @@
           <url>file://$PROJECT_DIR$/Quiz252.py</url>
           <line>799</line>
           <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz254.py</url>
+          <line>304</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz254.py</url>
+          <line>308</line>
+          <option name="timeStamp" value="25" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
