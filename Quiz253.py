@@ -879,14 +879,39 @@ def show_rest_screen():
     canvas.bind("<Button-1>", lambda event: show_language_selection())
     root.mainloop()
 
+
 def show_language_selection():
     global inactivity_timer
 
     def on_interaction(event):
         reset_timer()
+    def change_color1(event):
+        pt_button.config(bg="white", fg="black")
+        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20  # Inicio do preto
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180  # Final do preto
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
+
+        on_interaction()
+
+    def change_color2(event):
+        en_button.config(bg="white", fg="black")
+        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220  # Inicio do preto
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380  # Final do preto
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
+        on_interaction()
+
+    def Remove_change_color1(event):
+        pt_button.config(bg="black", fg="white")
+        canvas.delete("b1")
+        on_interaction()
+    def Remove_change_color2(event):
+        en_button.config(bg="black", fg="white")
+        canvas.delete("b2")
+        on_interaction()
 
     canvas.delete("all")
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
+
     canvas.unbind("<Button-1>")
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((370, 103), Image.Resampling.LANCZOS)
@@ -896,23 +921,37 @@ def show_language_selection():
     x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="Sans Light", size=45)
-    pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0, command=lambda: show_registration_form("pt"),
-                          fg="white", bg="black", width=20, height=1)
+    pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0,
+                          command=lambda: show_registration_form("pt"),
+                          fg="white", bg="black", width=20, height=1,
+                          activebackground="white", activeforeground="black")
     pt_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 100, anchor="center",
                                             window=pt_button)
     x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220  # Inicio do preto
     x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
-    en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0, command=lambda: show_registration_form("en"),
-                          fg="white", bg="black", width=20, height=1)
+    en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0,
+                          command=lambda: show_registration_form("en"),
+                          fg="white", bg="black", width=20, height=1,
+                          activebackground="white", activeforeground="black")
     en_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 300, anchor="center",
                                             window=en_button)
 
     # Adicionar evento de interação para resetar o temporizador
     canvas.bind_all("<Motion>", on_interaction)
     canvas.bind_all("<Key>", on_interaction)
-    pt_button.bind("<Button-1>", on_interaction)
-    en_button.bind("<Button-1>", on_interaction)
+
+    pt_button.bind("<Button-1>", change_color1)
+    en_button.bind("<Button-1>", change_color2)
+
+    pt_button.bind("<Enter>", change_color1)
+    en_button.bind("<Enter>", change_color2)
+
+    pt_button.bind("<ButtonRelease-1>", Remove_change_color1)
+    en_button.bind("<ButtonRelease-1>", Remove_change_color2)
+
+    pt_button.bind("<Leave>", Remove_change_color1)
+    en_button.bind("<Leave>", Remove_change_color2)
 
     reset_timer()
     Start_time_after_all()  # Iniciar o temporizador de inatividade

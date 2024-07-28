@@ -213,53 +213,84 @@ def create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
               x1, y1]
     return canvas.create_polygon(points, **kwargs, smooth=True)
 
-def show_question(question, possible_answers, current_question, in_weight):
-    global logo_img, logo_photo, background_photo, question_text_id, answer_text_ids, answer_bg_ids, timer_text_id, rfid_allowed, boximg, logo_photo_boximg
-    stop_time()
-    is_paused = False
-    canvas.delete("all")
-    answer_text_ids = []  # Resetar a lista de IDs das respostas
-    answer_bg_ids = []  # Resetar a lista de IDs dos fundos das respostas
 
+def show_question(question, possible_answers, current_question, in_weight):
+    # Declaração de variáveis globais usadas na função
+    global logo_img, logo_photo, background_photo, question_text_id, answer_text_ids, answer_bg_ids, timer_text_id, rfid_allowed, boximg, logo_photo_boximg
+
+    # Para o temporizador de inatividade
+    stop_time()
+
+    # Inicializa a variável de pausa como falsa
+    is_paused = False
+
+    # Limpa todos os elementos do canvas
+    canvas.delete("all")
+
+    # Reseta as listas de IDs das respostas e fundos das respostas
+    answer_text_ids = []
+    answer_bg_ids = []
+
+    # Define a imagem de fundo do canvas
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
 
+    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário.
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
-    logo_img = logo_img.resize((550, 152), Image.Resampling.LANCZOS)
+    logo_img = logo_img.resize((480, 133), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
-    canvas.create_image(screen_width // 2, 100, image=logo_photo, anchor="center")
 
-    custom_font1 = tkFont.Font(family="Sans Light", size=18)
-    custom_font2 = tkFont.Font(family="Sans Light", size=24)
-    custom_font3 = tkFont.Font(family="Sans Light", size=20)
-    bold_font = tkFont.Font(family="Sans Light", size=20, weight='bold')
+    # Posiciona o logo da FedEx no centro da tela.
+    canvas.create_image(screen_width // 2, screen_height // 8, image=logo_photo, anchor="center")
 
-    timer_text_id = canvas.create_text(screen_width - 150, 152, text=f'Tempo: {time_left}s', font=custom_font1,
+    # Define diferentes fontes personalizadas
+    custom_font1 = tkFont.Font(family="Sans Light", size=28) #fonte temporizador
+    custom_font2 = tkFont.Font(family="Sans Light", size=54) #fonte das perguntas
+
+    # Adiciona o temporizador ao canvas
+    timer_text_id = canvas.create_text(screen_width - 400, screen_height // 8 + int(133 / 4) + 5, text=f'Tempo: {time_left}s', font=custom_font1,
                                        width=900, fill="black")
 
-    x1, y1 = 50, screen_height // 5  # inicio do preto
-    x2, y2 = screen_width - 50, screen_height // 3  # Final do preto
+    y_offset = 100  # Ajuste este valor para descer as perguntas e respostas
+    x1, y1 = screen_width // 10, screen_height // 5 + y_offset  # Início do retângulo a 1/10 da largura
+    x2, y2 = screen_width * 9 // 10, screen_height // 3 + y_offset  # Fim do retângulo a 9/10 da largura
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white')
 
-    question_text_id = canvas.create_text(screen_width - (screen_width - 70), screen_height // 4, text=question,
-                                          font=custom_font2, width=900, fill="black", anchor="w")
+    # Calcula a largura do texto da pergunta com base nas coordenadas do retângulo de fundo
+    text_width = x2 - x1 - 20  # Ajuste o valor conforme necessário para garantir que o texto não ultrapasse os limites
 
+    # Adiciona o texto da pergunta ao canvas
+    question_text_id = canvas.create_text(x1 + 10, (y1 + y2) // 2, text=question,
+                                          font=custom_font2, width=text_width, fill="black", anchor="w")
+
+    # Define as coordenadas do retângulo de fundo da questão
+    px1, py1 = screen_width // 10 + 15, int(screen_height // 5 + 20 + (y_offset * 5.5))  # Início do retângulo a 1/10 da largura
+    px2, py2 = screen_width // 3.5, int(screen_height // 5 + 40 + (y_offset * 5.5))  # Fim do retângulo a 9/10 da largura
+    create_rounded_rectangle(canvas, px1, py1, px2, py2, radius=0, outline='#4d148c', width=2, fill='#4d148c')
+
+
+    # Loop para criar os textos das respostas e seus fundos
     for idx, answer in enumerate(possible_answers):
-        x1, y1 = 50, screen_height // 4 + 200 + idx * 100  # inicio do preto
-        x2, y2 = screen_width - 50, screen_height // 4 + 300 + idx * 100  # Final do preto
+        # Define as coordenadas dos retângulos de fundo das respostas
+        y_answer_offset = y_offset + 200  # Ajuste adicional para as respostas
+        Y_difference_beetwen_question = 160
+        x1, y1 = screen_width // 10, screen_height // 4 + 200 + idx * Y_difference_beetwen_question + y_answer_offset  # Início do retângulo a 1/10 da largura
+        x2, y2 = screen_width * 9 // 10, screen_height // 4 + 300 + idx * Y_difference_beetwen_question + y_answer_offset  # Fim do retângulo a 9/10 da largura
         bg_id = create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white')
         answer_bg_ids.append(bg_id)
 
-        # Criação do texto em duas partes: in_weight e resposta
-        weight_text = canvas.create_text(screen_width - (screen_width - 70), screen_height // 4 + 250 + idx * 100,
-                                         text=in_weight[idx], font=bold_font, fill="black", anchor="w")
-        answer_text = canvas.create_text(screen_width - (screen_width - 70) + 180, screen_height // 4 + 250 + idx * 100,
-                                         text=answer, font=custom_font2, fill="black", anchor="w")
+        # Criação do texto em duas partes: peso e resposta
+        answer_text = canvas.create_text(x1 + 10, y1 + 50,
+                                         text=answer, font=custom_font2, fill="black", anchor="w", width=text_width)
 
-        answer_text_ids.append((weight_text, answer_text))
+        # Adiciona os IDs dos textos de resposta à lista
+        answer_text_ids.append(answer_text)
 
-    #delay(5000)
-    root.after(5000, lambda: set_rfid_allowed(True))  # Permitir leitura RFID após x segundo
+    # Define um atraso de 5 segundos para permitir a leitura RFID
+    root.after(5000, lambda: set_rfid_allowed(True))
+
+    # Define um atraso adicional de 0.1 segundos para mostrar a imagem da caixa
     root.after(5100, show_box_image)
+
 
 def show_box_image():
     print()
@@ -390,11 +421,11 @@ def start_quiz(language):
     time_left = 120  # Reinicia o temporizador para 120 segundos
     if language == "pt":
         questions = [
-            "1. A FedEx Express é hoje a maior empresa de entregas rápidas do planeta. Quais serviços ela oferece no Brasil?",
-            "2. Pensando na agilidade da entrega internacional, a FedEx oferece o serviço International Priority e International Priority Freight aos clientes. Qual o tempo de trânsito médio destes serviços?",
-            "3. Para o mercado de aviação, algumas soluções de entrega são extremamente importantes. Qual das soluções abaixo a FedEx oferece para as importações e exportações?",
-            "4. A FedEx transporta mercadorias de diversos perfis, valores, tamanhos e pesos. Para o serviço internacional, dos itens abaixo qual tipo de produto a FedEx também transporta?",
-            "5. A FedEx vem trabalhando para entregar um futuro mais sustentável. A meta é neutralizar as emissões de carbono em suas operações até 2040 em quantos por cento?"
+            "A FedEx Express é hoje a maior empresa de entregas rápidas do planeta. Quais serviços ela oferece no Brasil?",
+            "Pensando na agilidade da entrega internacional, a FedEx oferece o serviço International Priority e International Priority Freight aos clientes. Qual o tempo de trânsito médio destes serviços?",
+            "Para o mercado de aviação, algumas soluções de entrega são extremamente importantes. Qual das soluções abaixo a FedEx oferece para as importações e exportações?",
+            "A FedEx transporta mercadorias de diversos perfis, valores, tamanhos e pesos. Para o serviço internacional, dos itens abaixo qual tipo de produto a FedEx também transporta?",
+            "A FedEx vem trabalhando para entregar um futuro mais sustentável. A meta é neutralizar as emissões de carbono em suas operações até 2040 em quantos por cento?"
         ]
         answers = [
             ["Transporte internacional", "Transporte nacional", "Serviços de logística", "Todos os anteriores"],
@@ -437,11 +468,11 @@ def start_quiz(language):
         ]
     else:
         questions = [
-            "1. FedEx Express is currently the largest express delivery company on the planet. What services does FedEx offer in Brazil?",
-            "2. For efficient international delivery, FedEx provides its customers with two services: International Priority and International Priority Freight. What is the average transit time for these services?",
-            "3. Some delivery solutions are extremely important for the transportation market. Which of the following solutions does FedEx offer for imports and exports?",
-            "4. FedEx provides transportation services to goods of various types, values, sizes and weights. Which of the options below does FedEx also transport in its international service? ",
-            "5. FedEx has been working towards a more sustainable future. In percentage, what is FedEx´s goal to reduce carbon emissions in its operations by 2040?"
+            "FedEx Express is currently the largest express delivery company on the planet. What services does FedEx offer in Brazil?",
+            "For efficient international delivery, FedEx provides its customers with two services: International Priority and International Priority Freight. What is the average transit time for these services?",
+            "Some delivery solutions are extremely important for the transportation market. Which of the following solutions does FedEx offer for imports and exports?",
+            "FedEx provides transportation services to goods of various types, values, sizes and weights. Which of the options below does FedEx also transport in its international service? ",
+            "FedEx has been working towards a more sustainable future. In percentage, what is FedEx´s goal to reduce carbon emissions in its operations by 2040?"
         ]
         answers = [
             ["International transportation", "Domestic transportation", "Logistics services",
@@ -634,6 +665,7 @@ def formatar_telefone(event=None):
     if not telefone or telefone_formatado.strip() == phone_entry.placeholder_text:
         phone_entry.insert(0, phone_entry.placeholder_text)
         phone_entry.config(fg="grey")
+
 def formatar_e_validar_cnpj(event=None):
     cnpj = cnpj_entry.get().replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
 
@@ -705,6 +737,30 @@ def validar_cnpj(cnpj):
 def show_registration_form(language):
     global selected_language, name_entry, email_entry, phone_entry, city_entry, uf_entry
     global company_entry, cnpj_entry, segment_entry, logo_img, logo_photo, active_entry
+
+    def change_color_reg_1(event):
+        register_button.config(bg="white", fg="black")
+
+        x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do preto
+        x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Final do preto
+
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
+
+    def change_color_reg_2(event):
+        back_button.config(bg="white", fg="black")
+        x1, y1 = screen_width // 10, y_btn_position - 65  # Início do preto
+        x2, y2 = screen_width // 2.5, y_btn_position + 116  # Final do preto
+
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
+
+    def Remove_change_color_reg_1(event):
+        register_button.config(bg="black", fg="white")
+        canvas.delete("b1")
+
+    def Remove_change_color_reg_2(event):
+        back_button.config(bg="black", fg="white")
+        canvas.delete("b2")
+
 
     # Para quando a função é chamada, o timer de inatividade é parado.
     stop_time()
@@ -849,18 +905,39 @@ def show_registration_form(language):
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="Sans Light", size=35)
 
-    register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START", font=custom_font,
-                                command=save_registration_data, fg="white", bd=0, bg="black", width=15, height=1)
-    canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25, window=register_button, anchor="center")
+    register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START",
+                                font=custom_font,
+                                command=save_registration_data, fg="white", bd=0,
+                                bg="black", width=24, height=2,
+                                activebackground="white", activeforeground="black",
+                                highlightthickness=0)
+    canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25,
+                         window=register_button, anchor="center")
 
     # Cria e posiciona o botão de "VOLTAR"/"BACK" no canvas.
     x1, y1 = screen_width // 10, y_btn_position - 65  # Início do preto
     x2, y2 = screen_width // 2.5, y_btn_position + 116  # Final do preto
 
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
-    back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK", font=custom_font,
-                            command=back_PTEN, fg="white", bd=0, bg="black", width=15, height=1)
+    back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK",
+                            font=custom_font,
+                            command=back_PTEN, fg="white", bd=0,
+                            bg="black", width=24, height=2,
+                            activebackground="white", activeforeground="black",
+                            highlightthickness=0)
     canvas.create_window(screen_width // 2 - (screen_width // 4), y_btn_position + 25, window=back_button, anchor="center")
+
+    register_button.bind("<Button-1>", change_color_reg_1)
+    back_button.bind("<Button-1>", change_color_reg_2)
+
+    register_button.bind("<Enter>", change_color_reg_1)
+    back_button.bind("<Enter>", change_color_reg_2)
+
+    register_button.bind("<ButtonRelease-1>", Remove_change_color_reg_1)
+    back_button.bind("<ButtonRelease-1>", Remove_change_color_reg_2)
+
+    register_button.bind("<Leave>", Remove_change_color_reg_1)
+    back_button.bind("<Leave>", Remove_change_color_reg_2)
 
     # ----------------------------------- Fim de iniciar e voltar ---------------------------------
 
@@ -879,40 +956,83 @@ def show_rest_screen():
     canvas.bind("<Button-1>", lambda event: show_language_selection())
     root.mainloop()
 
+
 def show_language_selection():
     global inactivity_timer
 
     def on_interaction(event):
         reset_timer()
 
+    def on_interaction2():
+        reset_timer()
+    def change_color1(event):
+        pt_button.config(bg="white", fg="black")
+        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20  # Inicio do preto
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180  # Final do preto
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
+
+        on_interaction2()
+
+    def change_color2(event):
+        en_button.config(bg="white", fg="black")
+        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220  # Inicio do preto
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380  # Final do preto
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
+        on_interaction2()
+
+    def Remove_change_color1(event):
+        pt_button.config(bg="black", fg="white")
+        canvas.delete("b1")
+        on_interaction2()
+    def Remove_change_color2(event):
+        en_button.config(bg="black", fg="white")
+        canvas.delete("b2")
+        on_interaction2()
+
     canvas.delete("all")
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
+
     canvas.unbind("<Button-1>")
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((370, 103), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
     canvas.create_image(screen_width // 2, screen_width // 6, image=logo_photo, anchor="center")
-    x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20  # Inicio do preto
+    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 20  # Inicio do preto
     x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="Sans Light", size=45)
-    pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0, command=lambda: show_registration_form("pt"),
-                          fg="white", bg="black", width=20, height=1)
+
+    pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0,
+                          command=lambda: show_registration_form("pt"),
+                          fg="white", bg="black", width=42, height=1,
+                          activebackground="white", activeforeground="black")
     pt_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 100, anchor="center",
                                             window=pt_button)
-    x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220  # Inicio do preto
+    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 220  # Inicio do preto
     x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
-    en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0, command=lambda: show_registration_form("en"),
-                          fg="white", bg="black", width=20, height=1)
+    en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0,
+                          command=lambda: show_registration_form("en"),
+                          fg="white", bg="black", width=42, height=1,
+                          activebackground="white", activeforeground="black")
     en_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 300, anchor="center",
                                             window=en_button)
 
     # Adicionar evento de interação para resetar o temporizador
     canvas.bind_all("<Motion>", on_interaction)
     canvas.bind_all("<Key>", on_interaction)
-    pt_button.bind("<Button-1>", on_interaction)
-    en_button.bind("<Button-1>", on_interaction)
+
+    pt_button.bind("<Button-1>", change_color1)
+    en_button.bind("<Button-1>", change_color2)
+
+    pt_button.bind("<Enter>", change_color1)
+    en_button.bind("<Enter>", change_color2)
+
+    pt_button.bind("<ButtonRelease-1>", Remove_change_color1)
+    en_button.bind("<ButtonRelease-1>", Remove_change_color2)
+
+    pt_button.bind("<Leave>", Remove_change_color1)
+    en_button.bind("<Leave>", Remove_change_color2)
 
     reset_timer()
     Start_time_after_all()  # Iniciar o temporizador de inatividade

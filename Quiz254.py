@@ -634,6 +634,7 @@ def formatar_telefone(event=None):
     if not telefone or telefone_formatado.strip() == phone_entry.placeholder_text:
         phone_entry.insert(0, phone_entry.placeholder_text)
         phone_entry.config(fg="grey")
+
 def formatar_e_validar_cnpj(event=None):
     cnpj = cnpj_entry.get().replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
 
@@ -705,6 +706,30 @@ def validar_cnpj(cnpj):
 def show_registration_form(language):
     global selected_language, name_entry, email_entry, phone_entry, city_entry, uf_entry
     global company_entry, cnpj_entry, segment_entry, logo_img, logo_photo, active_entry
+
+    def change_color_reg_1(event):
+        register_button.config(bg="white", fg="black")
+
+        x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do preto
+        x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Final do preto
+
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
+
+    def change_color_reg_2(event):
+        back_button.config(bg="white", fg="black")
+        x1, y1 = screen_width // 10, y_btn_position - 65  # Início do preto
+        x2, y2 = screen_width // 2.5, y_btn_position + 116  # Final do preto
+
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
+
+    def Remove_change_color_reg_1(event):
+        register_button.config(bg="black", fg="white")
+        canvas.delete("b1")
+
+    def Remove_change_color_reg_2(event):
+        back_button.config(bg="black", fg="white")
+        canvas.delete("b2")
+
 
     # Para quando a função é chamada, o timer de inatividade é parado.
     stop_time()
@@ -849,18 +874,39 @@ def show_registration_form(language):
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="Sans Light", size=35)
 
-    register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START", font=custom_font,
-                                command=save_registration_data, fg="white", bd=0, bg="black", width=15, height=1)
-    canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25, window=register_button, anchor="center")
+    register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START",
+                                font=custom_font,
+                                command=save_registration_data, fg="white", bd=0,
+                                bg="black", width=15, height=1,
+                                activebackground="white", activeforeground="black",
+                                highlightthickness=0)
+    canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25,
+                         window=register_button, anchor="center")
 
     # Cria e posiciona o botão de "VOLTAR"/"BACK" no canvas.
     x1, y1 = screen_width // 10, y_btn_position - 65  # Início do preto
     x2, y2 = screen_width // 2.5, y_btn_position + 116  # Final do preto
 
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
-    back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK", font=custom_font,
-                            command=back_PTEN, fg="white", bd=0, bg="black", width=15, height=1)
+    back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK",
+                            font=custom_font,
+                            command=back_PTEN, fg="white", bd=0,
+                            bg="black", width=15, height=1,
+                            activebackground="white", activeforeground="black",
+                            highlightthickness=0)
     canvas.create_window(screen_width // 2 - (screen_width // 4), y_btn_position + 25, window=back_button, anchor="center")
+
+    register_button.bind("<Button-1>", change_color_reg_1)
+    back_button.bind("<Button-1>", change_color_reg_2)
+
+    register_button.bind("<Enter>", change_color_reg_1)
+    back_button.bind("<Enter>", change_color_reg_2)
+
+    register_button.bind("<ButtonRelease-1>", Remove_change_color_reg_1)
+    back_button.bind("<ButtonRelease-1>", Remove_change_color_reg_2)
+
+    register_button.bind("<Leave>", Remove_change_color_reg_1)
+    back_button.bind("<Leave>", Remove_change_color_reg_2)
 
     # ----------------------------------- Fim de iniciar e voltar ---------------------------------
 
@@ -879,40 +925,83 @@ def show_rest_screen():
     canvas.bind("<Button-1>", lambda event: show_language_selection())
     root.mainloop()
 
+
 def show_language_selection():
     global inactivity_timer
 
     def on_interaction(event):
         reset_timer()
 
+    def on_interaction2():
+        reset_timer()
+    def change_color1(event):
+        pt_button.config(bg="white", fg="black")
+        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20  # Inicio do preto
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180  # Final do preto
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
+
+        on_interaction2()
+
+    def change_color2(event):
+        en_button.config(bg="white", fg="black")
+        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220  # Inicio do preto
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380  # Final do preto
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
+        on_interaction2()
+
+    def Remove_change_color1(event):
+        pt_button.config(bg="black", fg="white")
+        canvas.delete("b1")
+        on_interaction2()
+    def Remove_change_color2(event):
+        en_button.config(bg="black", fg="white")
+        canvas.delete("b2")
+        on_interaction2()
+
     canvas.delete("all")
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
+
     canvas.unbind("<Button-1>")
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((370, 103), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
     canvas.create_image(screen_width // 2, screen_width // 6, image=logo_photo, anchor="center")
-    x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20  # Inicio do preto
+    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 20  # Inicio do preto
     x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="Sans Light", size=45)
-    pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0, command=lambda: show_registration_form("pt"),
-                          fg="white", bg="black", width=20, height=1)
+
+    pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0,
+                          command=lambda: show_registration_form("pt"),
+                          fg="white", bg="black", width=42, height=1,
+                          activebackground="white", activeforeground="black")
     pt_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 100, anchor="center",
                                             window=pt_button)
-    x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220  # Inicio do preto
+    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 220  # Inicio do preto
     x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380  # Final do preto
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
-    en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0, command=lambda: show_registration_form("en"),
-                          fg="white", bg="black", width=20, height=1)
+    en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0,
+                          command=lambda: show_registration_form("en"),
+                          fg="white", bg="red", width=42, height=1,
+                          activebackground="white", activeforeground="black")
     en_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 300, anchor="center",
                                             window=en_button)
 
     # Adicionar evento de interação para resetar o temporizador
     canvas.bind_all("<Motion>", on_interaction)
     canvas.bind_all("<Key>", on_interaction)
-    pt_button.bind("<Button-1>", on_interaction)
-    en_button.bind("<Button-1>", on_interaction)
+
+    pt_button.bind("<Button-1>", change_color1)
+    en_button.bind("<Button-1>", change_color2)
+
+    pt_button.bind("<Enter>", change_color1)
+    en_button.bind("<Enter>", change_color2)
+
+    pt_button.bind("<ButtonRelease-1>", Remove_change_color1)
+    en_button.bind("<ButtonRelease-1>", Remove_change_color2)
+
+    pt_button.bind("<Leave>", Remove_change_color1)
+    en_button.bind("<Leave>", Remove_change_color2)
 
     reset_timer()
     Start_time_after_all()  # Iniciar o temporizador de inatividade

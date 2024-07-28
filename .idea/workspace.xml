@@ -5,10 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c7b6794-6efa-4310-ace3-46b74bd75c2d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Quiz251.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz252.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz253.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz254.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz255.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Quiz250.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz250.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Quiz252.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz252.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/registration_data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/registration_data.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,19 +37,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Python.Quiz.executor": "Run",
-    "Python.Quiz2.executor": "Run",
-    "Python.Quiz9.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.masktest.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/Users/fernando/github/Quiz_Fedex_Labace_2024"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Python.Quiz.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Quiz2.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Quiz9.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.masktest.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/fernando/github/Quiz_Fedex_Labace_2024&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\fernando\github\Quiz_Fedex_Labace_2024" />
