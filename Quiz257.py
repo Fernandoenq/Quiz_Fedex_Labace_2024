@@ -100,23 +100,36 @@ def Start_time_after_all():
 # ---------------------------------------------------------
 
 def place_on_second_monitor(root):
+    # Obtém a lista de monitores conectados
     monitors = get_monitors()
+
+    # Verifica se há mais de um monitor conectado
     if len(monitors) > 1:
-        second_monitor = monitors[0]
+        # Seleciona o segundo monitor (índice 1, pois o índice 0 é o primeiro monitor)
+        second_monitor = monitors[1]
+
+        # Define a geometria da janela 'root' para ocupar todo o segundo monitor
         root.geometry(f'{second_monitor.width}x{second_monitor.height}+{second_monitor.x}+{second_monitor.y}')
+
+        # Atualiza a interface gráfica para refletir a nova geometria
         root.update_idletasks()
     else:
+        # Imprime uma mensagem no console caso apenas um monitor seja detectado
         print("Apenas um monitor detectado. Não é possível colocar a janela no segundo monitor.")
 
-
-
-
 def place_on_first_monitor(root):
+    # Obtém a lista de monitores conectados
     monitors = get_monitors()
+
+    # Verifica se há pelo menos um monitor conectado
     if len(monitors) > 0:
+        # Seleciona o primeiro monitor (índice 0)
         first_monitor = monitors[0]
+
+        # Define a geometria da janela 'root' para ocupar todo o primeiro monitor
         root.geometry(f'{first_monitor.width}x{first_monitor.height}+{first_monitor.x}+{first_monitor.y}')
     else:
+        # Imprime uma mensagem no console caso nenhum monitor seja detectado
         print("Nenhum monitor detectado. Não é possível colocar a janela no primeiro monitor.")
 
 
@@ -132,26 +145,54 @@ def change_answer_bg_color(answer_index, temp_color):
 
 
 def update_timer():
+    # Declara as variáveis globais usadas na função
     global time_left, is_paused
+
+    # Verifica se o temporizador não está pausado
     if not is_paused:
+
+        # Verifica se ainda há tempo restante
         if time_left > 0:
+
+            # Decrementa o tempo restante em 1 segundo
             time_left -= 1
+
+            # Imprime o tempo restante no console
             print(time_left)
+
+            # Atualiza o texto do temporizador no canvas
             canvas.itemconfig(timer_text_id, text=f'Tempo: {time_left}s')
+
+            # Define um novo temporizador que chama a função update_timer após 1000 milissegundos (1 segundo)
             root.after(1000, update_timer)
+
+        # Se o tempo restante for 0 ou menos, chama a função show_final_message
         else:
             show_final_message(in_time=False)
+
+    # Se o temporizador estiver pausado, imprime "Pausado" no console
     else:
         print("Pausado")
 
+
 def delay(ms):
+    # Define um atraso de ms milissegundos antes de executar o próximo comando
     root.after(ms)
+
+    # Atualiza a interface gráfica para refletir quaisquer mudanças
     root.update()
 
+
 def resume_timer():
+    # Declara a variável global usada na função
     global is_paused
+
+    # Define a variável is_paused como False, indicando que o temporizador não está mais pausado
     is_paused = False
+
+    # Chama a função update_timer para retomar o temporizador
     update_timer()
+
 
 def show_correct_message(question_index):
     # Declaração de variáveis globais usadas na função
@@ -196,38 +237,62 @@ def show_incorrect_message(question_index):
 
 
 def read_rfid():
+    # Declaração de variáveis globais usadas na função
     global rfid_data, current_question, current_answer, current_hits, rfid_allowed
-    rfid_readings = []  # Lista para armazenar as leituras de RFID
-    max_readings = 5  # Número de leituras necessárias
-    reading_interval = 2  # Intervalo máximo entre leituras em segundos (2 segundos)
-    last_read_time = time.time()  # Tempo da última leitura
 
+    # Lista para armazenar as leituras de RFID
+    rfid_readings = []
+
+    # Número de leituras necessárias para considerar uma leitura válida
+    max_readings = 5
+
+    # Intervalo máximo entre leituras em segundos
+    reading_interval = 2
+
+    # Armazena o tempo da última leitura
+    last_read_time = time.time()
+
+    # Função interna para reiniciar as leituras
     def reset_readings():
         nonlocal rfid_readings
-        rfid_readings.clear()  # Limpar as leituras acumuladas
+        rfid_readings.clear()  # Limpa as leituras acumuladas
         print("Leituras de RFID reiniciadas devido ao intervalo de tempo sem leitura")
 
     try:
+        # Abre a porta serial com os parâmetros definidos
         with serial.Serial(port, baud_rate, timeout=1) as ser:
             while True:
+                # Verifica se há dados na porta serial
                 if ser.in_waiting > 0:
+                    # Lê e processa a linha de dados recebida da porta serial
                     rfid_data = ser.readline().decode('utf-8').strip().upper()
                     print(f"Tag RFID detectada: {rfid_data}")
+
+                    # Remove espaços e converte a leitura para maiúsculas
                     cleaned_rfid_data = rfid_data.replace(" ", "").upper()
 
+                    # Obtém o tempo atual
                     current_time = time.time()
-                    if current_time - last_read_time > reading_interval:
-                        reset_readings()  # Reiniciar leituras se o intervalo for excedido
 
+                    # Verifica se o intervalo de tempo entre leituras foi excedido
+                    if current_time - last_read_time > reading_interval:
+                        reset_readings()  # Reinicia as leituras se o intervalo for excedido
+
+                    # Atualiza o tempo da última leitura
                     last_read_time = current_time
 
-                    if rfid_allowed:  # Verificar se a leitura é permitida
+                    # Verifica se a leitura de RFID é permitida
+                    if rfid_allowed:
+                        # Adiciona a leitura de RFID à lista de leituras
                         rfid_readings.append(cleaned_rfid_data)
-                        if len(rfid_readings) > max_readings:
-                            rfid_readings.pop(0)  # Mantém apenas as últimas 'max_readings' leituras
 
+                        # Mantém apenas as últimas 'max_readings' leituras
+                        if len(rfid_readings) > max_readings:
+                            rfid_readings.pop(0)
+
+                        # Verifica se todas as leituras são iguais
                         if len(rfid_readings) == max_readings and all(r == rfid_readings[0] for r in rfid_readings):
-                            # Todas as leituras são iguais
+                            # Define a resposta atual com base na leitura de RFID
                             if cleaned_rfid_data == "UIDTAG:0429D495BE2A81":
                                 current_answer = 1
                             elif cleaned_rfid_data == "UIDTAG:0448CD95BE2A81":
@@ -237,6 +302,7 @@ def read_rfid():
                             elif cleaned_rfid_data == "UIDTAG:04FFDF95BE2A81":
                                 current_answer = 4
 
+                            # Verifica se a resposta é correta ou incorreta e atualiza a pontuação
                             if current_question < len(correct_answers) and current_answer == correct_answers[
                                 current_question]:
                                 current_hits += 1
@@ -245,42 +311,58 @@ def read_rfid():
                                 current_question]:
                                 show_incorrect_message(current_question)
 
-                            rfid_data = ""  # Limpar a leitura após processar
-                            rfid_readings.clear()  # Limpar as leituras acumuladas
-                            rfid_allowed = False  # Bloquear leituras adicionais até a próxima pergunta
+                            # Limpa a leitura de RFID após o processamento
+                            rfid_data = ""
+                            # Limpa as leituras acumuladas
+                            rfid_readings.clear()
+                            # Bloqueia leituras adicionais até a próxima pergunta
+                            rfid_allowed = False
     except serial.SerialException as e:
+        # Trata erros de comunicação serial
         print(f"Erro na comunicação serial: {e}")
 
-    root.after(int(reading_interval * 1000), reset_readings)  # Programar o reinício das leituras após o intervalo
+    # Programa o reinício das leituras após o intervalo de tempo definido
+    root.after(int(reading_interval * 1000), reset_readings)
+
 
 def update_rfid_label():
+    # Declara a variável global usada na função
     global rfid_data
+
+    # Verifica se há dados de RFID
     if rfid_data:
+        # Atualiza o texto do rótulo de RFID no canvas com os dados de RFID
         canvas.itemconfig(rfid_text, text=f"RFID Data: {rfid_data}")
+
+    # Define um temporizador que chama a função update_rfid_label após 1000 milissegundos (1 segundo)
     root.after(1000, update_rfid_label)
+
 
 def create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=25, **kwargs):
     """Cria um retângulo arredondado no canvas."""
-    points = [x1 + radius, y1,
+    # Define os pontos para criar o retângulo arredondado
+    points = [x1 + radius, y1,  # Ponto superior esquerdo (arredondado)
               x1 + radius, y1,
+              x2 - radius, y1,  # Ponto superior direito (arredondado)
               x2 - radius, y1,
-              x2 - radius, y1,
-              x2, y1,
+              x2, y1,  # Ponto superior direito (reta)
               x2, y1 + radius,
               x2, y1 + radius,
+              x2, y2 - radius,  # Ponto inferior direito (arredondado)
               x2, y2 - radius,
-              x2, y2 - radius,
-              x2, y2,
+              x2, y2,  # Ponto inferior direito (reta)
               x2 - radius, y2,
               x2 - radius, y2,
+              x1 + radius, y2,  # Ponto inferior esquerdo (arredondado)
               x1 + radius, y2,
-              x1 + radius, y2,
-              x1, y2,
+              x1, y2,  # Ponto inferior esquerdo (reta)
               x1, y2 - radius,
               x1, y2 - radius,
               x1, y1 + radius,
               x1, y1 + radius,
-              x1, y1]
+              x1, y1]  # Ponto superior esquerdo (reta)
+
+    # Cria um polígono com os pontos definidos e retorna o objeto do canvas
     return canvas.create_polygon(points, **kwargs, smooth=True)
 
 
@@ -363,20 +445,40 @@ def show_question(question, possible_answers, current_question, in_weight):
 
 
 def show_box_image():
+    # Imprime uma linha em branco (pode ser usada para depuração)
     print()
+
+    # Declara as variáveis globais usadas na função
     global boximg, logo_photo_boximg
+
+    # Tenta executar o bloco de código abaixo e captura exceções caso ocorram
     try:
+        # Abre a imagem "Box.png", converte para RGBA (inclui canal alfa)
         boximg = Image.open("Box.png").convert("RGBA")
+
+        # Redimensiona a imagem para 500x600 pixels usando a técnica de redimensionamento LANCZOS
         boximg = boximg.resize((500, 600), Image.Resampling.LANCZOS)
+
+        # Converte a imagem redimensionada para um objeto ImageTk.PhotoImage, que pode ser usado no canvas
         logo_photo_boximg = ImageTk.PhotoImage(boximg)
-        canvas.create_image(screen_width // 2, screen_height // 2 + (screen_height // 4), image=logo_photo_boximg, anchor="center")
+
+        # Cria uma imagem no canvas na posição especificada, com a imagem redimensionada e ancorada no centro
+        canvas.create_image(screen_width // 2, screen_height // 2 + (screen_height // 4), image=logo_photo_boximg,
+                            anchor="center")
+
+    # Captura qualquer exceção que ocorra durante a execução do bloco try
     except Exception as e:
+        # Imprime a mensagem de erro no console
         print(f"Erro ao carregar a imagem: {e}")
 
 
 def set_rfid_allowed(state):
+    # Declara a variável global usada na função
     global rfid_allowed
+
+    # Define o estado de permissão de leitura de RFID
     rfid_allowed = state
+
 
 def show_overlay_message(message, sub_message, is_correct):
     global overlay_photo  # Adiciona a referência global para manter a imagem viva
@@ -420,11 +522,19 @@ def show_overlay_message(message, sub_message, is_correct):
         root.after(15000, resume_timer)
 
 def show_final_message(in_time):
+    # Declaração de variáveis globais usadas na função
     global logo_img, logo_photo, current_hits, current_question, time_left, is_paused
-    is_paused = True  # Pausar o tempo ao entrar na tela da mensagem final
-    stop_time()  # Parar o temporizador de inatividade
+
+    # Pausa o temporizador
+    is_paused = True
+
+    # Para o temporizador de inatividade
+    stop_time()
+
+    # Limpa todos os elementos do canvas
     canvas.delete("all")
 
+    # Define as mensagens principais e secundárias com base no desempenho do usuário
     if current_hits > 3 and in_time is True:
         main_message_pt = "PARABÉNS!"
         main_message_en = "CONGRATULATIONS!"
@@ -440,49 +550,50 @@ def show_final_message(in_time):
         last_message_pt = None
         last_message_en = None
 
+    # Define a imagem de fundo do canvas
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
 
+    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((550, 152), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
+
+    # Posiciona o logo da FedEx no centro da tela
     canvas.create_image(screen_width // 2, 100, image=logo_photo, anchor="center")
 
+    # Define diferentes fontes personalizadas
     custom_font1 = tkFont.Font(family="Sans Light", size=40)
     custom_font2 = tkFont.Font(family="Sans Light", size=24)
     custom_font3 = tkFont.Font(family="Sans Light", size=70)
 
+    # Verifica a linguagem selecionada e adiciona as mensagens correspondentes ao canvas
     if selected_language == "pt":
-        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_pt, font=custom_font1,
-                           fill="black")
-        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_pt, font=custom_font2,
-                           fill="black")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_pt, font=custom_font1, fill="black")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_pt, font=custom_font2, fill="black")
 
         if current_hits > 3 and in_time is True:
-            x1, y1 = screen_width // 2 - (screen_width // 4) + 100, screen_height // 2 + 125  # Inicio do preto
-            x2, y2 = screen_width // 2 + (screen_width // 4) - 100, screen_height // 2 + 150  # Final do preto
+            x1, y1 = screen_width // 2 - (screen_width // 4) + 100, screen_height // 2 + 125  # Início do retângulo
+            x2, y2 = screen_width // 2 + (screen_width // 4) - 100, screen_height // 2 + 150  # Fim do retângulo
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='#4D148C', width=2, fill='#4D148C')
-
-            canvas.create_text(screen_width // 2, screen_height // 2 + 160, text=last_message_pt, font=custom_font3,
-                               fill="black")
+            canvas.create_text(screen_width // 2, screen_height // 2 + 160, text=last_message_pt, font=custom_font3, fill="black")
     else:
-        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_en, font=custom_font1,
-                           fill="black")
-        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_en, font=custom_font2,
-                           fill="black")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_en, font=custom_font1, fill="black")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_en, font=custom_font2, fill="black")
 
         if current_hits > 3 and in_time is True:
-            x1, y1 = screen_width // 2 - (screen_width // 4) + 100, screen_height // 2 + 125  # Inicio do preto
-            x2, y2 = screen_width // 2 + (screen_width // 4) - 100, screen_height // 2 + 150  # Final do preto
+            x1, y1 = screen_width // 2 - (screen_width // 4) + 100, screen_height // 2 + 125  # Início do retângulo
+            x2, y2 = screen_width // 2 + (screen_width // 4) - 100, screen_height // 2 + 150  # Fim do retângulo
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='#4D148C', width=2, fill='#4D148C')
-
-            canvas.create_text(screen_width // 2, screen_height // 2 + 160, text=last_message_en, font=custom_font3,
-                               fill="black")
+            canvas.create_text(screen_width // 2, screen_height // 2 + 160, text=last_message_en, font=custom_font3, fill="black")
 
     # Adiciona um evento para reiniciar o quiz ao clicar em qualquer parte da tela
     canvas.bind("<Button-1>", restart_quiz)
 
 def restart_quiz(event=None):
+    # Declaração de variáveis globais usadas na função
     global current_question, current_hits, time_left, rfid_data, is_paused, stop_time_var, rfid_allowed
+
+    # Reinicia as variáveis globais para o estado inicial do quiz
     current_question = 0
     current_hits = 0
     time_left = 120  # Reinicia o temporizador para 120 segundos
@@ -491,21 +602,26 @@ def restart_quiz(event=None):
     stop_time_var = False
     rfid_allowed = False
 
-    reset_timer()  # Reiniciar o temporizador de inatividade
-    show_language_selection()  # Mostrar a tela de seleção de idioma
+    # Reiniciar o temporizador de inatividade
+    reset_timer()
+
+    # Mostrar a tela de seleção de idioma
+    show_language_selection()
+
 
 def next_question():
-    global current_question
-    if current_question < len(questions) - 1:
-        current_question += 1
-        show_question(questions[current_question], answers[current_question], current_question, in_weight)
+    global current_question  # Declaração de variável global para rastrear a pergunta atual
+    if current_question < len(questions) - 1:  # Verifica se há mais perguntas disponíveis
+        current_question += 1  # Incrementa o índice da pergunta atual
+        show_question(questions[current_question], answers[current_question], current_question, in_weight)  # Exibe a próxima pergunta
     else:
-        show_final_message(in_time=True)
+        show_final_message(in_time=True)  # Mostra a mensagem final se não houver mais perguntas
 
 def start_quiz(language):
+    # Declaração de variáveis globais para armazenar dados do quiz
     global questions, answers, correct_answers, correct_messages, incorrect_messages, message_after_reply, time_left, in_weight, current_question, current_hits
-    current_question = 0
-    current_hits = 0
+    current_question = 0  # Reinicia o índice da pergunta atual
+    current_hits = 0  # Reinicia o contador de acertos
     time_left = 120  # Reinicia o temporizador para 120 segundos
     if language == "pt":
         questions = [
@@ -627,74 +743,78 @@ def start_quiz(language):
             "Box FedEx 3: ",
             "Box FedEx 4: ",
         ]
+
+    # Exibe a primeira pergunta do quiz e inicia o temporizador
     show_question(questions[current_question], answers[current_question], current_question, in_weight)
     update_timer()
 
 def back_PTEN():
-    selected_language = ""
-    show_language_selection()
+    selected_language = ""  # Reseta a variável de idioma selecionado para uma string vazia
+    show_language_selection()  # Chama a função para exibir a tela de seleção de idioma
 
 def save_registration_data():
+    # Coleta os dados de entrada do formulário e armazena em um dicionário
     data = {
-        "Nome": name_entry.get(),
-        "Email": email_entry.get(),
-        "Celular": phone_entry.get(),
-        "Cidade": city_entry.get(),
-        "UF": uf_entry.get(),
-        "Empresa": company_entry.get(),
-        "CNPJ": cnpj_entry.get(),
-        "Segmento": segment_entry.get()
+        "Nome": name_entry.get(),  # Obtém o valor do campo de entrada "Nome"
+        "Email": email_entry.get(),  # Obtém o valor do campo de entrada "Email"
+        "Celular": phone_entry.get(),  # Obtém o valor do campo de entrada "Celular"
+        "Cidade": city_entry.get(),  # Obtém o valor do campo de entrada "Cidade"
+        "UF": uf_entry.get(),  # Obtém o valor do campo de entrada "UF"
+        "Empresa": company_entry.get(),  # Obtém o valor do campo de entrada "Empresa"
+        "CNPJ": cnpj_entry.get(),  # Obtém o valor do campo de entrada "CNPJ"
+        "Segmento": segment_entry.get()  # Obtém o valor do campo de entrada "Segmento"
     }
-    file_path = "registration_data.xlsx"
+    file_path = "registration_data.xlsx"  # Define o caminho do arquivo onde os dados serão salvos
 
-    if os.path.exists(file_path):
-        existing_df = pd.read_excel(file_path)
-        new_df = pd.concat([existing_df, pd.DataFrame([data])], ignore_index=True)
+    if os.path.exists(file_path):  # Verifica se o arquivo já existe
+        existing_df = pd.read_excel(file_path)  # Lê os dados existentes do arquivo
+        new_df = pd.concat([existing_df, pd.DataFrame([data])], ignore_index=True)  # Adiciona os novos dados aos existentes
     else:
-        new_df = pd.DataFrame([data])
+        new_df = pd.DataFrame([data])  # Cria um novo DataFrame com os dados coletados
 
-    new_df.to_excel(file_path, index=False)
+    new_df.to_excel(file_path, index=False)  # Salva os dados no arquivo Excel, sem incluir o índice
 
-    start_quiz(selected_language)
-
-def on_entry_click(event, placeholder_text):
-    global active_entry
-    active_entry = event.widget
-    if event.widget.get() == placeholder_text:
-        event.widget.delete(0, "end")
-        event.widget.config(fg="black")
-
+    start_quiz(selected_language)  # Inicia o quiz com base no idioma selecionado
 
 def on_entry_click(event, placeholder_text):
-    global active_entry
-    active_entry = event.widget
-    if event.widget.get() == placeholder_text:
-        event.widget.delete(0, "end")
-        event.widget.config(fg="black")
+    global active_entry  # Declara a variável global active_entry
+    active_entry = event.widget  # Define active_entry como o widget que disparou o evento
+    if event.widget.get() == placeholder_text:  # Verifica se o conteúdo do campo é o placeholder_text
+        event.widget.delete(0, "end")  # Se for, apaga o texto do campo
+        event.widget.config(fg="black")  # Muda a cor do texto para preto
+
+# Duplicata da função on_entry_click, a segunda definição sobrescreve a primeira
+def on_entry_click(event, placeholder_text):
+    global active_entry  # Declara a variável global active_entry
+    active_entry = event.widget  # Define active_entry como o widget que disparou o evento
+    if event.widget.get() == placeholder_text:  # Verifica se o conteúdo do campo é o placeholder_text
+        event.widget.delete(0, "end")  # Se for, apaga o texto do campo
+        event.widget.config(fg="black")  # Muda a cor do texto para preto
 
 def on_focusout(event, placeholder_text):
+    # Quando o campo de entrada perde o foco, esta função é chamada.
     if event.widget.get() == "":
+        # Se o campo de entrada estiver vazio, insere o placeholder_text e muda a cor do texto para cinza.
         event.widget.insert(0, placeholder_text)
         event.widget.config(fg="grey")
     elif event.widget.get().strip() == placeholder_text:
+        # Se o campo de entrada contiver apenas o placeholder_text, mantém o placeholder_text e a cor cinza.
         event.widget.delete(0, "end")
         event.widget.insert(0, placeholder_text)
         event.widget.config(fg="grey")
 
 def key_pressed(char):
-    if char != None:
+    # Insere o caractere pressionado no campo de entrada ativo.
+    if char is not None:
         active_entry.insert(tk.END, char)
-    else:
-        pass
 
 def backspace_pressed():
+    # Remove o último caractere do campo de entrada ativo, se houver.
     if active_entry and len(active_entry.get()) > 0:
         active_entry.delete(len(active_entry.get()) - 1, tk.END)
-    else:
-        pass
 
 def create_keyboard(root, canvas):
-    # Lista de teclas que serão exibidas no teclado
+    # Lista de teclas que serão exibidas no teclado virtual.
     keys = [
         '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
         'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P',
@@ -703,62 +823,58 @@ def create_keyboard(root, canvas):
         'Backspace'
     ]
 
-    # Configuração inicial para a posição e aparência dos botões
-    x_offset = 289
-    y_offset = screen_height // 2
-    button_width = int(18)
-    button_height = 6
-    button_bg = '#d3d3d3'
-    button_fg = 'black'
-    button_font = tkFont.Font(family="Sans Light", size=10, weight='bold')
-    #button_font = tkFont.Font(family="Sans BOLD", size=45)
+    # Configuração inicial para a posição e aparência dos botões.
+    x_offset = 289  # Deslocamento inicial no eixo X
+    y_offset = screen_height // 2  # Deslocamento inicial no eixo Y
+    button_width = int(18)  # Largura do botão
+    button_height = 6  # Altura do botão
+    button_bg = '#d3d3d3'  # Cor de fundo do botão
+    button_fg = 'black'  # Cor do texto do botão
+    button_font = tkFont.Font(family="Sans Light", size=10, weight='bold')  # Fonte do botão
     button_spacing = 4  # Espaçamento horizontal entre as teclas
 
-    # Loop através de cada tecla na lista de keys
+    # Loop para criar e posicionar cada tecla no canvas.
     for i, key in enumerate(keys):
-        # Determina a linha e coluna da tecla atual
-        row = i // 10
-        col = i % 10
+        row = i // 10  # Calcula a linha da tecla atual
+        col = i % 10  # Calcula a coluna da tecla atual
 
-
-
-        # Calcula a posição x e y do botão no canvas
+        # Calcula a posição X e Y do botão no canvas.
         x = x_offset + col * (button_width * 10 - button_spacing)
         y = y_offset + row * (button_height + 1) * 20
 
-        # Define a ação do botão; 'Backspace' tem uma ação especial
+        # Define a ação do botão; 'Backspace' tem uma ação especial.
         if key == 'Backspace':
             command = backspace_pressed
             key = "\u2190"  # Símbolo de seta para a esquerda
         else:
             command = lambda k=key: key_pressed(k)
 
-        # Cria o botão com as configurações definidas e a ação associada
+        # Cria o botão com as configurações definidas e a ação associada.
         button = tk.Button(root, text=key, font=button_font, command=command,
                            width=button_width, height=button_height,
                            bg=button_bg, fg=button_fg, bd=1, relief='raised')
 
-        # Posiciona o botão no canvas
+        # Posiciona o botão no canvas.
         canvas.create_window(x, y, window=button)
 
-
-
     #---------------------- Tecla de espaço ---------------------------------
-    space_button_width = int(screen_width // 10)
-    # Cria o botão de espaço separadamente, pois ele é maior e ocupa uma linha inteira
+    space_button_width = int(screen_width // 10)  # Largura do botão de espaço
+    # Cria o botão de espaço separadamente, pois ele é maior e ocupa uma linha inteira.
     space_button = tk.Button(root, text="Espaço", font=button_font,
                              command=lambda: key_pressed(' '),
                              width=space_button_width, height=button_height,
                              bg=button_bg, fg=button_fg, bd=1, relief='raised')
 
-    # Posiciona o botão de espaço no canvas
+    # Posiciona o botão de espaço no canvas.
     canvas.create_window(screen_width // 2, y_offset + (screen_height // 6), window=space_button)
 
 def formatar_telefone(event=None):
+    # Obtém o texto do campo de entrada de telefone e remove caracteres indesejados
     telefone = phone_entry.get().replace("(", "").replace(")", "").replace("-", "").replace(" ", "").replace("+", "")
-    telefone = telefone[:13]  # Limitar a quantidade de dígitos (2 para código do país + 2 para DDD + 9 para o número)
+    telefone = telefone[:13]  # Limita a quantidade de dígitos (2 para código do país + 2 para DDD + 9 para o número)
     telefone_formatado = ""
 
+    # Formata o telefone adicionando os caracteres apropriados
     if len(telefone) > 0:
         telefone_formatado = "+"
     if len(telefone) > 2:
@@ -770,32 +886,37 @@ def formatar_telefone(event=None):
     elif len(telefone) > 4:
         telefone_formatado += telefone[4:]
 
+    # Atualiza o campo de entrada com o telefone formatado
     phone_entry.delete(0, tk.END)
     phone_entry.insert(0, telefone_formatado)
 
-    # Verificar se o campo está vazio ou igual ao placeholder_text
+    # Verifica se o campo está vazio ou igual ao placeholder_text
     if not telefone or telefone_formatado.strip() == phone_entry.placeholder_text:
         phone_entry.insert(0, phone_entry.placeholder_text)
         phone_entry.config(fg="grey")
 
 def formatar_e_validar_cnpj(event=None):
+    # Obtém o texto do campo de entrada de CNPJ e remove caracteres indesejados
     cnpj = cnpj_entry.get().replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
 
+    # Se o CNPJ for "99999999999999", formata-o diretamente e retorna
     if cnpj == "99999999999999":
         cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
         cnpj_entry.delete(0, tk.END)
         cnpj_entry.insert(0, cnpj_formatado)
         return
 
+    # Se o CNPJ não for válido, redefine o campo para o placeholder_text e retorna
     if not validar_cnpj(cnpj):
         cnpj_entry.delete(0, tk.END)
         cnpj_entry.insert(0, cnpj_entry.placeholder_text)
         cnpj_entry.config(fg="grey")
         return
 
-    cnpj = cnpj[:14]  # Limitar a quantidade de dígitos do CNPJ
+    cnpj = cnpj[:14]  # Limita a quantidade de dígitos do CNPJ
     cnpj_formatado = ""
 
+    # Formata o CNPJ adicionando os caracteres apropriados
     if len(cnpj) > 2:
         cnpj_formatado += cnpj[:2] + "."
     if len(cnpj) > 5:
@@ -807,10 +928,11 @@ def formatar_e_validar_cnpj(event=None):
     if len(cnpj) > 0:
         cnpj_formatado += cnpj[12:]
 
+    # Atualiza o campo de entrada com o CNPJ formatado
     cnpj_entry.delete(0, tk.END)
     cnpj_entry.insert(0, cnpj_formatado)
 
-    # Verificar se o campo está vazio ou igual ao placeholder_text
+    # Verifica se o campo está vazio ou igual ao placeholder_text
     if not cnpj or cnpj_formatado.strip() == cnpj_entry.placeholder_text:
         cnpj_entry.insert(0, cnpj_entry.placeholder_text)
         cnpj_entry.config(fg="grey")
@@ -845,61 +967,66 @@ def validar_cnpj(cnpj):
     # Verificar se os dígitos verificadores estão corretos
     return cnpj[-2:] == f"{primeiro_digito}{segundo_digito}"
 
-
 def show_registration_form(language):
+    # Declaração de variáveis globais usadas na função
     global selected_language, name_entry, email_entry, phone_entry, city_entry, uf_entry
     global company_entry, cnpj_entry, segment_entry, logo_img, logo_photo, active_entry
 
     def change_color_reg_1(event):
+        # Altera a cor do botão "INICIAR" quando o mouse está sobre ele
         register_button.config(bg="white", fg="black")
 
-        x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do preto
-        x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Final do preto
+        # Desenha um retângulo ao redor do botão
+        x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do retângulo
+        x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Fim do retângulo
 
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
 
     def change_color_reg_2(event):
+        # Altera a cor do botão "VOLTAR" quando o mouse está sobre ele
         back_button.config(bg="white", fg="black")
-        x1, y1 = screen_width // 10, y_btn_position - 65  # Início do preto
-        x2, y2 = screen_width // 2.5, y_btn_position + 116  # Final do preto
+
+        # Desenha um retângulo ao redor do botão
+        x1, y1 = screen_width // 10, y_btn_position - 65  # Início do retângulo
+        x2, y2 = screen_width // 2.5, y_btn_position + 116  # Fim do retângulo
 
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
 
     def Remove_change_color_reg_1(event):
+        # Remove a alteração de cor e o retângulo ao redor do botão "INICIAR" quando o mouse sai
         register_button.config(bg="black", fg="white")
         canvas.delete("b1")
 
     def Remove_change_color_reg_2(event):
+        # Remove a alteração de cor e o retângulo ao redor do botão "VOLTAR" quando o mouse sai
         back_button.config(bg="black", fg="white")
         canvas.delete("b2")
 
-
-    # Para quando a função é chamada, o timer de inatividade é parado.
+    # Para o temporizador de inatividade quando a função é chamada
     stop_time()
 
-    # Define a linguagem selecionada (português ou inglês) conforme o parâmetro passado.
+    # Define a linguagem selecionada (português ou inglês) conforme o parâmetro passado
     selected_language = language
 
-    # Limpa todos os elementos no canvas.
+    # Limpa todos os elementos no canvas
     canvas.delete("all")
 
-    # Define a imagem de fundo.
+    # Define a imagem de fundo
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
 
-    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário.
+    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((480, 133), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
 
-    # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio.
+    # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio
     canvas.create_image(screen_width // 2, screen_height // 8, image=logo_photo, anchor="center")
 
-    #----------------------------------- Formulario de registro ------------------------------
-    # Define os rótulos e suas versões em inglês.
+    # Define os rótulos e suas versões em inglês
     labels = ["Nome e Sobrenome", "Email", "Celular", "Cidade", "UF", "Empresa", "Segmento", "CNPJ"]
     labels_en = ["Name and Last Name", "Email", "Phone", "City", "State", "Company", "Segment", "Business ID"]
 
-    # Define a posição Y de cada rótulo.
+    # Define a posição Y de cada rótulo
     y_distance_standar = screen_height // 7
     y_positions = [y_distance_standar + 150 + 50 + 20,
                    y_distance_standar + 250 + 100 + 40,
@@ -910,85 +1037,75 @@ def show_registration_form(language):
                    y_distance_standar + 550 + 250 + 100,
                    y_distance_standar + 650 + 300 + 120]
 
-    # Define a fonte personalizada.
+    # Define a fonte personalizada
     custom_font = tkFont.Font(family="Sans Light", size=45)
 
-    # Cria uma lista para armazenar os campos de entrada (entries).
+    # Cria uma lista para armazenar os campos de entrada (entries)
     entries = []
 
-    # RAIO Padrao
-    stardard_radius = 30
+    # Configurações padrões
+    stardard_radius = 30  # Raio padrão
+    standard_x_start = ((screen_width // 10) + 5) - 5  # X inicial padrão
+    standard_x_end = screen_width - ((screen_width // 10) - 2)  # X final padrão
+    stardard_final_height = 120  # Altura padrão da caixa de cadastro
+    color_background_insert = "#FAF9F6"  # Cor de fundo da área de texto
+    Widht_Box_insert_font = 51  # Largura da fonte da caixa de entrada
 
-    # X Padrao
-    standard_x_start = ((screen_width // 10) + 5) - 5
-    print(screen_width)
-    print(standard_x_start)
-    standard_x_end = screen_width - ((screen_width // 10) - 2)
-
-    #Altura da caixa de cadastro
-    stardard_final_height = 120
-
-    #Cor do fundo da área de texto
-    color_background_insert = "#FAF9F6"
-    Widht_Box_insert_font = 51
-
-
-    # Loop para criar cada campo de entrada e seu respectivo rótulo.
+    # Loop para criar cada campo de entrada e seu respectivo rótulo
     for idx, label in enumerate(labels):
-        # Define o texto do placeholder conforme a linguagem selecionada.
+        # Define o texto do placeholder conforme a linguagem selecionada
         placeholder_text = labels[idx] if language == "pt" else labels_en[idx]
 
-        # Se o índice não for 3, 4, 5 ou 6, cria um campo de entrada de tamanho maior.
+        # Se o índice não for 3, 4, 5 ou 6, cria um campo de entrada de tamanho maior
         if idx != 3 and idx != 4 and idx != 5 and idx != 6:
-
-            # Define a posição e dimensões da caixa ao redor do campo de entrada.
-            x1, y1 = standard_x_start - 3, y_positions[idx] - 15  # início do preto
-            x2, y2 = standard_x_end + 3, y_positions[idx] + stardard_final_height  # Final do preto
+            # Define a posição e dimensões da caixa ao redor do campo de entrada
+            x1, y1 = standard_x_start - 3, y_positions[idx] - 15  # Início do retângulo preto
+            x2, y2 = standard_x_end + 3, y_positions[idx] + stardard_final_height  # Fim do retângulo preto
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=2, fill='black')
 
-            x1, y1 = standard_x_start + 3, y_positions[idx] - 9  # ponto inicial
-            x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6  # ponto final
+            x1, y1 = standard_x_start + 3, y_positions[idx] - 9  # Início do retângulo branco
+            x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6  # Fim do retângulo branco
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1, fill=color_background_insert)
 
-            # Cria o campo de entrada com um placeholder text, cor e largura definidas.
+            # Cria o campo de entrada com um placeholder text, cor e largura definidas
             entry = tk.Entry(root, font=custom_font, width=Widht_Box_insert_font, fg="black", bg=color_background_insert, bd=0)
             entry.insert(0, placeholder_text)
 
-            # Adiciona eventos para quando o campo ganha ou perde o foco, para manipular o placeholder text.
+            # Adiciona eventos para quando o campo ganha ou perde o foco, para manipular o placeholder text
             entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
             entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
 
-            # Adiciona eventos específicos para formatação de telefone e validação de CNPJ para os respectivos campos.
+            # Adiciona eventos específicos para formatação de telefone e validação de CNPJ para os respectivos campos
             if idx == 2 and language == "pt":  # Index 2 é o campo de telefone (Celular)
                 entry.bind("<FocusOut>", formatar_telefone)
             if idx == 7 and language == "pt":  # Index 7 é o campo de CNPJ
                 entry.bind("<FocusOut>", formatar_e_validar_cnpj)
 
-            # Posiciona o campo de entrada no canvas.
+            # Posiciona o campo de entrada no canvas
             canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
-            # Adiciona o campo de entrada à lista de entradas.
+            # Adiciona o campo de entrada à lista de entradas
             entries.append(entry)
         else:
-            # Caso o índice seja 3, 4, 5 ou 6, cria um campo de entrada de tamanho menor.
+            # Caso o índice seja 3, 4, 5 ou 6, cria um campo de entrada de tamanho menor
             if idx == 3 or idx == 5:
-                x1, y1 = standard_x_start - 3, y_positions[idx] - 15  # ponto inicial
-                x2, y2 = screen_width // 2 + 180, y_positions[idx] + stardard_final_height  # Final do preto
+                x1, y1 = standard_x_start - 3, y_positions[idx] - 15  # Início do retângulo preto
+                x2, y2 = screen_width // 2 + 180, y_positions[idx] + stardard_final_height  # Fim do retângulo preto
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=3, fill='black')
-                x1, y1 = standard_x_start + 3, y_positions[idx] - 9  # ponto inicial
-                x2, y2 = screen_width // 2 + 177 - 3, y_positions[idx] + stardard_final_height - 6  # final do branco
+                x1, y1 = standard_x_start + 3, y_positions[idx] - 9  # Início do retângulo branco
+                x2, y2 = screen_width // 2 + 177 - 3, y_positions[idx] + stardard_final_height - 6  # Fim do retângulo branco
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1, fill=color_background_insert)
-                entry = tk.Entry(root, font=custom_font, width= int(Widht_Box_insert_font * 0.60), fg="black", bg=color_background_insert, bd=0)
+                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.60), fg="black", bg=color_background_insert, bd=0)
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
                 canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
             else:
-                x1, y1 = screen_width // 2 + 200, y_positions[idx] - 15 # inicial do preto
-                x2, y2 = standard_x_end + 3, y_positions[idx] + stardard_final_height  # Final do preto
+                x1, y1 = screen_width // 2 + 200, y_positions[idx] - 15  # Início do retângulo preto
+                x2, y2 = standard_x_end + 3, y_positions[idx] + stardard_final_height  # Fim do retângulo preto
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=2, fill='black')
-                x1, y1 = screen_width // 2 + 203 + 3, y_positions[idx] - 9  # inicial do branco
-                x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6  # final do branco
+                x1, y1 = screen_width // 2 + 203 + 3, y_positions[idx] - 9  # Início do retângulo branco
+                x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6  # Fim do retângulo branco
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1, fill=color_background_insert)
                 entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.38) // 2 + 10, fg="black", bg=color_background_insert, bd=0)
                 entry.insert(0, placeholder_text)
@@ -997,22 +1114,21 @@ def show_registration_form(language):
                 canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
 
-    # Atribui os campos de entrada às variáveis globais para serem acessíveis em outras partes do programa.
+    # Atribui os campos de entrada às variáveis globais para serem acessíveis em outras partes do programa
     name_entry, email_entry, phone_entry, city_entry, uf_entry, company_entry, segment_entry, cnpj_entry = entries
 
-    # Define o placeholder_text para phone_entry e cnpj_entry.
+    # Define o placeholder_text para phone_entry e cnpj_entry
     phone_entry.placeholder_text = "Celular:" if language == "pt" else "Phone:"
     cnpj_entry.placeholder_text = "CNPJ:" if language == "pt" else "Business ID:"
 
     # ----------------------------------- Fim do Formulario de registro ------------------------------
 
-
     # ----------------------------------- Botões de iniciar e voltar ---------------------------------
     y_btn_position = screen_height // 2 + (screen_height // 4)
 
-    # Cria e posiciona o botão de "INICIAR"/"START" no canvas.
-    x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do preto
-    x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Final do preto
+    # Cria e posiciona o botão de "INICIAR"/"START" no canvas
+    x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do retângulo preto
+    x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Fim do retângulo preto
 
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="Sans Light", size=35)
@@ -1026,9 +1142,9 @@ def show_registration_form(language):
     canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25,
                          window=register_button, anchor="center")
 
-    # Cria e posiciona o botão de "VOLTAR"/"BACK" no canvas.
-    x1, y1 = screen_width // 10, y_btn_position - 65  # Início do preto
-    x2, y2 = screen_width // 2.5, y_btn_position + 116  # Final do preto
+    # Cria e posiciona o botão de "VOLTAR"/"BACK" no canvas
+    x1, y1 = screen_width // 10, y_btn_position - 65  # Início do retângulo preto
+    x2, y2 = screen_width // 2.5, y_btn_position + 116  # Fim do retângulo preto
 
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK",
@@ -1039,6 +1155,7 @@ def show_registration_form(language):
                             highlightthickness=0)
     canvas.create_window(screen_width // 2 - (screen_width // 4), y_btn_position + 25, window=back_button, anchor="center")
 
+    # Bind events para mudar a cor dos botões ao interagir com eles
     register_button.bind("<Button-1>", change_color_reg_1)
     back_button.bind("<Button-1>", change_color_reg_2)
 
@@ -1053,76 +1170,107 @@ def show_registration_form(language):
 
     # ----------------------------------- Fim de iniciar e voltar ---------------------------------
 
-    # Cria o teclado virtual para entrada de dados.
+    # Cria o teclado virtual para entrada de dados
     create_keyboard(root, canvas)
 
-
 def show_rest_screen():
+    # Limpa todos os elementos do canvas
     canvas.delete("all")
+    # Define a imagem de fundo
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
+    # Remove qualquer binding anterior de clique no canvas
     canvas.unbind("<Button-1>")
+    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((600, 166), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
+    # Posiciona o logo da FedEx no centro da tela
     canvas.create_image(screen_width // 2, screen_height // 2, image=logo_photo, anchor="center")
+    # Vincula o clique do mouse para chamar a função show_language_selection
     canvas.bind("<Button-1>", lambda event: show_language_selection())
+    # Inicia o main loop do Tkinter para a interface gráfica
     root.mainloop()
-
 
 def show_language_selection():
     global inactivity_timer
 
     def on_interaction(event):
+        # Reseta o temporizador de inatividade ao detectar uma interação
         reset_timer()
 
     def on_interaction2():
+        # Reseta o temporizador de inatividade
         reset_timer()
-    def change_color1(event):
-        pt_button.config(bg="white", fg="black")
-        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20  # Inicio do preto
-        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180  # Final do preto
-        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
 
+    def change_color1(event):
+        # Altera a cor do botão "PORTUGUÊS" quando o mouse está sobre ele
+        pt_button.config(bg="white", fg="black")
+        # Desenha um retângulo ao redor do botão
+        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180
+        create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
+        # Reseta o temporizador de inatividade
         on_interaction2()
 
     def change_color2(event):
+        # Altera a cor do botão "ENGLISH" quando o mouse está sobre ele
         en_button.config(bg="white", fg="black")
-        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220  # Inicio do preto
-        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380  # Final do preto
+        # Desenha um retângulo ao redor do botão
+        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
+        # Reseta o temporizador de inatividade
         on_interaction2()
 
     def Remove_change_color1(event):
+        # Remove a alteração de cor e o retângulo ao redor do botão "PORTUGUÊS" quando o mouse sai
         pt_button.config(bg="black", fg="white")
         canvas.delete("b1")
+        # Reseta o temporizador de inatividade
         on_interaction2()
+
     def Remove_change_color2(event):
+        # Remove a alteração de cor e o retângulo ao redor do botão "ENGLISH" quando o mouse sai
         en_button.config(bg="black", fg="white")
         canvas.delete("b2")
+        # Reseta o temporizador de inatividade
         on_interaction2()
 
+    # Limpa todos os elementos do canvas
     canvas.delete("all")
+    # Define a imagem de fundo
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
-
+    # Remove qualquer binding anterior de clique no canvas
     canvas.unbind("<Button-1>")
+    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((370, 103), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
+    # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio
     canvas.create_image(screen_width // 2, screen_width // 6, image=logo_photo, anchor="center")
-    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 20  # Inicio do preto
-    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180  # Final do preto
+
+    # Define a posição e dimensões do retângulo ao redor do botão "PORTUGUÊS"
+    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 20
+    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
+
+    # Define a fonte personalizada para os botões
     custom_font = tkFont.Font(family="Sans Light", size=45)
 
+    # Cria e posiciona o botão "PORTUGUÊS"
     pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0,
                           command=lambda: show_registration_form("pt"),
                           fg="white", bg="black", width=42, height=1,
                           activebackground="white", activeforeground="black")
     pt_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 100, anchor="center",
                                             window=pt_button)
-    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 220  # Inicio do preto
-    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380  # Final do preto
+
+    # Define a posição e dimensões do retângulo ao redor do botão "ENGLISH"
+    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 220
+    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
+
+    # Cria e posiciona o botão "ENGLISH"
     en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0,
                           command=lambda: show_registration_form("en"),
                           fg="white", bg="black", width=42, height=1,
@@ -1130,10 +1278,11 @@ def show_language_selection():
     en_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 300, anchor="center",
                                             window=en_button)
 
-    # Adicionar evento de interação para resetar o temporizador
+    # Adiciona eventos de interação para resetar o temporizador
     canvas.bind_all("<Motion>", on_interaction)
     canvas.bind_all("<Key>", on_interaction)
 
+    # Bind events para mudar a cor dos botões ao interagir com eles
     pt_button.bind("<Button-1>", change_color1)
     en_button.bind("<Button-1>", change_color2)
 
@@ -1146,32 +1295,48 @@ def show_language_selection():
     pt_button.bind("<Leave>", Remove_change_color1)
     en_button.bind("<Leave>", Remove_change_color2)
 
+    # Reseta o temporizador de inatividade
     reset_timer()
-    Start_time_after_all()  # Iniciar o temporizador de inatividade
+    # Inicia o temporizador de inatividade
+    Start_time_after_all()
+    # Inicia o main loop do Tkinter para a interface gráfica
     root.mainloop()
 
 # Configuração da interface gráfica
-root = tk.Tk()
-root.title("Quiz")
-root.attributes('-fullscreen', True)
-#place_on_second_monitor(root)  # Garantir que a janela ocupe toda a tela do segundo monitor
+root = tk.Tk()  # Cria a janela principal do Tkinter
+root.title("Quiz")  # Define o título da janela
+root.attributes('-fullscreen', True)  # Configura a janela para ocupar a tela inteira
 
+# Carrega a imagem de fundo
 background_image = Image.open("background.png")
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-background_image = background_image.resize((screen_width, screen_height), Image.LANCZOS)
-background_photo = ImageTk.PhotoImage(background_image)
+screen_width = root.winfo_screenwidth()  # Obtém a largura da tela
+screen_height = root.winfo_screenheight()  # Obtém a altura da tela
+background_image = background_image.resize((screen_width, screen_height), Image.LANCZOS)  # Redimensiona a imagem de fundo para caber na tela
+background_photo = ImageTk.PhotoImage(background_image)  # Converte a imagem redimensionada para o formato PhotoImage do Tkinter
 
+# Cria um canvas para desenhar elementos gráficos
 canvas = tk.Canvas(root, width=screen_width, height=screen_height)
-canvas.pack(fill="both", expand=True)
-canvas.create_image(0, 0, image=background_photo, anchor="nw")
+canvas.pack(fill="both", expand=True)  # Expande o canvas para ocupar toda a janela
+canvas.create_image(0, 0, image=background_photo, anchor="nw")  # Define a imagem de fundo no canvas
+
+# Adiciona texto no canvas para exibir dados de RFID
 rfid_text = canvas.create_text(screen_width // 2, screen_height - 50, text="RFID Data: ", font=("Sans Light", 24),
                                fill="black")
+
+# Adiciona texto no canvas para exibir o temporizador
 timer_text_id = canvas.create_text(screen_width - 150, 152, text=f'Tempo: {time_left}s', font=("Sans Light", 18),
                                    fill="black")
+
+# Inicializa as listas para perguntas, respostas e respostas corretas
 questions = []
 answers = []
 correct_answers = []
+
+# Inicia a leitura de RFID em uma thread separada para não bloquear a interface gráfica
 threading.Thread(target=read_rfid, daemon=True).start()
+
+# Agenda a atualização do texto RFID após 1 segundo
 root.after(1000, update_rfid_label)
+
+# Exibe a tela de descanso inicial
 show_rest_screen()

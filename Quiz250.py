@@ -702,13 +702,17 @@ def show_registration_form(language):
             x1, y1 = screen_width // 5 - 60, y_positions[idx] - 15  # inicio do preto
             x2, y2 = screen_width // 2 + 480, y_positions[idx] + 45  # Final do preto
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
+
             x1, y1 = screen_width // 5 - 57, y_positions[idx] - 12  # ponto inicial
             x2, y2 = screen_width // 2 + 477, y_positions[idx] + 42  # ponto finaal
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=1, fill='white')
+
             entry = tk.Entry(root, font=custom_font, width=60, fg="grey", bg='white', bd=0)
             entry.insert(0, placeholder_text)
+
             entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder))
             entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
+
             if idx == 2 and language == "pt":  # Index 2 é o campo de telefone (Celular)
                 entry.bind("<FocusOut>", formatar_telefone)
             if idx == 7 and language == "pt":  # Index 7 é o campo de CNPJ
