@@ -39,7 +39,7 @@ def update_inactivity_timer():
         if time_remaining > 0:
 
             # Imprime o tempo restante para a inatividade no console
-            print(f"Tempo restante para inatividade: {time_remaining} segundos")
+            #print(f"Tempo restante para inatividade: {time_remaining} segundos")
 
             # Decrementa o tempo restante em 1 segundo
             time_remaining -= 1
@@ -158,7 +158,7 @@ def update_timer():
             time_left -= 1
 
             # Imprime o tempo restante no console
-            print(time_left)
+            #print(time_left)
 
             # Atualiza o texto do temporizador no canvas
             canvas.itemconfig(timer_text_id, text=f'Tempo: {time_left}s')
@@ -256,7 +256,7 @@ def read_rfid():
     def reset_readings():
         nonlocal rfid_readings
         rfid_readings.clear()  # Limpa as leituras acumuladas
-        print("Leituras de RFID reiniciadas devido ao intervalo de tempo sem leitura")
+        #print("Leituras de RFID reiniciadas devido ao intervalo de tempo sem leitura")
 
     try:
         # Abre a porta serial com os parâmetros definidos
@@ -266,7 +266,7 @@ def read_rfid():
                 if ser.in_waiting > 0:
                     # Lê e processa a linha de dados recebida da porta serial
                     rfid_data = ser.readline().decode('utf-8').strip().upper()
-                    print(f"Tag RFID detectada: {rfid_data}")
+                    #print(f"Tag RFID detectada: {rfid_data}")
 
                     # Remove espaços e converte a leitura para maiúsculas
                     cleaned_rfid_data = rfid_data.replace(" ", "").upper()
@@ -446,7 +446,7 @@ def show_question(question, possible_answers, current_question, in_weight):
 
 def show_box_image():
     # Imprime uma linha em branco (pode ser usada para depuração)
-    print()
+    #print()
 
     # Declara as variáveis globais usadas na função
     global boximg, logo_photo_boximg
@@ -516,7 +516,7 @@ def show_overlay_message(message, sub_message, is_correct):
 
     # Verifica se a pergunta atual é menor que 4 para continuar o jogo
     if current_question < 4:
-        print("AINDA DENTRO DO GAME")
+        #print("AINDA DENTRO DO GAME")
 
         # Configura para chamar a função resume_timer após 5000 milissegundos (5 segundos)
         root.after(15000, resume_timer)
@@ -777,10 +777,10 @@ def save_registration_data():
     start_quiz(selected_language)  # Inicia o quiz com base no idioma selecionado
 
 def on_entry_click(event, placeholder_text, idx):
-    print("Entrou no on_entry_click")
-    print(event)
-    print(placeholder_text)
-    print(idx)
+    #print("Entrou no on_entry_click")
+    #print(event)
+    #print(placeholder_text)
+    #print(idx)
     global active_entry  # Declara a variável global active_entry
 
     phone = event.widget.get()
@@ -793,7 +793,7 @@ def on_entry_click(event, placeholder_text, idx):
         return
 
 
-    print("Entrou no on_entry_click dentro de CNPJ")
+    #print("Entrou no on_entry_click dentro de CNPJ")
     cnpj = event.widget.get().replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
     if validar_cnpj(cnpj):
         event.widget.config(fg="black")  # Muda a cor do texto para preto
@@ -801,9 +801,9 @@ def on_entry_click(event, placeholder_text, idx):
 
     active_entry = event.widget  # Define active_entry como o widget que disparou o evento
     if event.widget.get() == placeholder_text or event.widget.get() == "Número inválido" or event.widget.get() == "CNPJ inválido":  # Verifica se o conteúdo do campo é o placeholder_text
-        print("Entrou no delete")
-        print(event.widget.get())
-        print(placeholder_text)
+        #print("Entrou no delete")
+        #print(event.widget.get())
+        #print(placeholder_text)
 
         event.widget.delete(0, "end")  # Se for, apaga o texto do campo
         event.widget.config(fg="black")  # Muda a cor do texto para preto
@@ -813,9 +813,9 @@ def on_entry_click(event, placeholder_text, idx):
 
 
 def on_focusout(event, placeholder_text):
-    print("Entrou no on_focusout")
-    print(event)
-    print(placeholder_text)
+    #print("Entrou no on_focusout")
+    #print(event)
+    #print(placeholder_text)
 
     # Quando o campo de entrada perde o foco, esta função é chamada.
     if event.widget.get() == "":
@@ -828,9 +828,43 @@ def on_focusout(event, placeholder_text):
         event.widget.insert(0, placeholder_text)
         event.widget.config(fg="black")
 
-def key_pressed(char):
+def check_fields(language):
+    # Verifica se todos os campos estão preenchidos
+
+    name = name_entry.get()
+    email = email_entry.get()
+    phone = phone_entry.get()
+    city = city_entry.get()
+    uf = uf_entry.get()
+    company = company_entry.get()
+    segment = segment_entry.get()
+
+    phone = phone
+    phone_clean = re.sub(r'[\s\(\)\-]', '', phone)
+    regex = re.compile(r'^(\+?55)?(\d{2})(9\d{8})$')
+    match = regex.match(phone_clean)
+
+    if (language == "pt" and phone != "Celular" and match) or (language == "en" and phone != "Phone"):
+        validate_phone = True
+    else:
+        validate_phone = False
+
+
+    validate_name = name != "Nome e Sobrenome" and name != "Name and Last Name"
+    validate_email = email != "Email" and email != "Email"
+    validate_city = city != "Cidade" and city != "City"
+    validate_uf = uf != "UF" and uf != "State"
+    validate_company = company != "Empresa" and company != "Company"
+    validate_segment = segment != "Segmento" and segment != "Segment"
+
+    if validate_name and validate_email and validate_phone and validate_city and validate_uf and validate_company and validate_segment:
+        register_button.config(state=tk.NORMAL)
+    else:
+        register_button.config(state=tk.DISABLED)
+def key_pressed(char, language):
     # Insere o caractere pressionado no campo de entrada ativo.
     if char is not None:
+        check_fields(language)
         active_entry.insert(tk.END, char)
 
 def backspace_pressed():
@@ -838,7 +872,7 @@ def backspace_pressed():
     if active_entry and len(active_entry.get()) > 0:
         active_entry.delete(len(active_entry.get()) - 1, tk.END)
 
-def create_keyboard(root, canvas):
+def create_keyboard(root, canvas, language):
     # Lista de teclas que serão exibidas no teclado virtual.
     keys = [
         '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
@@ -872,7 +906,7 @@ def create_keyboard(root, canvas):
             command = backspace_pressed
             key = "\u2190"  # Símbolo de seta para a esquerda
         else:
-            command = lambda k=key: key_pressed(k)
+            command = lambda k=key: key_pressed(k, language)
 
         # Cria o botão com as configurações definidas e a ação associada.
         button = tk.Button(root, text=key, font=button_font, command=command,
@@ -886,7 +920,7 @@ def create_keyboard(root, canvas):
     space_button_width = int(screen_width // 10)  # Largura do botão de espaço
     # Cria o botão de espaço separadamente, pois ele é maior e ocupa uma linha inteira.
     space_button = tk.Button(root, text="Espaço", font=button_font,
-                             command=lambda: key_pressed(' '),
+                             command=lambda: key_pressed(' ', language),
                              width=space_button_width, height=button_height,
                              bg=button_bg, fg=button_fg, bd=1, relief='raised')
 
@@ -895,23 +929,23 @@ def create_keyboard(root, canvas):
 
 
 def formatar_telefone(event=None):
-    print("Valor telefone")
+    #print("Valor telefone")
     phone = phone_entry.get()
-    print(phone)
+    #print(phone)
 
     # Remover espaços, parênteses e traços
     phone = re.sub(r'[\s\(\)\-]', '', phone)
-    print("Telefone limpo:", phone)
+    #print("Telefone limpo:", phone)
 
     # Regex para verificar números de telefone brasileiros com 11 dígitos obrigatórios
     regex = re.compile(r'^(\+?55)?(\d{2})(\d{9})$')
 
     # Verificar se o telefone corresponde ao padrão
     match = regex.match(phone)
-    print("Match:", match)
+    #print("Match:", match)
 
     if phone in ["Celular:", "Phone:"] or match is None:
-        print("Entrou para resetar")
+        #print("Entrou para resetar")
 
         if phone not in ["Celular:", "Phone:", ""]:
             phone_entry.delete(0, tk.END)
@@ -947,7 +981,7 @@ def formatar_telefone(event=None):
 
     # Verificar se o campo está vazio ou igual ao placeholder_text
     if not telefone or telefone_formatado.strip() == phone_entry.placeholder_text:
-        print("Entrou no if para resetar")
+        #print("Entrou no if para resetar")
 
         phone_entry.insert(0, phone_entry.placeholder_text)
         phone_entry.config(fg="black")
@@ -966,11 +1000,11 @@ def formatar_e_validar_cnpj(event=None):
     # Se o CNPJ não for válido
     if not validar_cnpj(cnpj):
         if cnpj_entry.get() == "" or cnpj_entry.get() == cnpj_entry.placeholder_text:
-            print("if 1")
+            #print("if 1")
             cnpj_entry.delete(0, tk.END)
             cnpj_entry.insert(0, cnpj_entry.placeholder_text)
         else:
-            print("if 1")
+            #print("if 1")
             cnpj_entry.delete(0, tk.END)
             cnpj_entry.insert(0, "CNPJ inválido")
         cnpj_entry.config(fg="black")
@@ -1031,8 +1065,8 @@ def validar_cnpj(cnpj):
 
 def show_registration_form(language):
     # Declaração de variáveis globais usadas na função
-    global selected_language, name_entry, email_entry, phone_entry, city_entry, uf_entry
-    global company_entry, cnpj_entry, segment_entry, logo_img, logo_photo, active_entry
+    global selected_language, name_entry, email_entry, phone_entry, city_entry, uf_entry, entries
+    global company_entry, cnpj_entry, segment_entry, logo_img, logo_photo, active_entry, register_button
 
     def change_color_reg_1(event):
         # Altera a cor do botão "INICIAR" quando o mouse está sobre ele
@@ -1144,7 +1178,7 @@ def show_registration_form(language):
                 entry.bind("<FocusOut>", formatar_e_validar_cnpj)
             else:
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
-
+            entry.bind("<KeyRelease>", lambda event: check_fields(language))
 
 
 
@@ -1165,6 +1199,7 @@ def show_registration_form(language):
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
+                entry.bind("<KeyRelease>", lambda event: check_fields(language))
                 canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
             else:
@@ -1178,6 +1213,7 @@ def show_registration_form(language):
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
+                entry.bind("<KeyRelease>", lambda event: check_fields(language))
                 canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
 
@@ -1205,7 +1241,7 @@ def show_registration_form(language):
                                 command=save_registration_data, fg="white", bd=0,
                                 bg="black", width=24, height=2,
                                 activebackground="white", activeforeground="black",
-                                highlightthickness=0)
+                                highlightthickness=0, state=tk.DISABLED)
     canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25,
                          window=register_button, anchor="center")
 
@@ -1238,7 +1274,10 @@ def show_registration_form(language):
     # ----------------------------------- Fim de iniciar e voltar ---------------------------------
 
     # Cria o teclado virtual para entrada de dados
-    create_keyboard(root, canvas)
+    create_keyboard(root, canvas, language)
+
+    # Verifica pela primeira vez se todos os campos estão preechidos
+    check_fields(language)
 
 def show_rest_screen():
     # Limpa todos os elementos do canvas
