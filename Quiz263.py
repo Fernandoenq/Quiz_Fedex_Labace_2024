@@ -136,11 +136,17 @@ def place_on_first_monitor(root):
 def change_answer_bg_color(answer_index, temp_color):
     # Altera a cor de fundo do item de resposta específico no canvas
     canvas.itemconfig(answer_bg_ids[answer_index], fill=temp_color)
+    print("answer_bg_ids[answer_index]")
+    print(answer_bg_ids[answer_index])
 
     # Adiciona um atraso de 2000 milissegundos (2 segundos) antes de executar a próxima linha
     delay(8000)
 
     # Exibe uma mensagem sobreposta com a mensagem atual, sub-mensagem e se a resposta está correta ou não
+    print("show_overlay_message")
+    print(current_message)
+    print(current_sub_message)
+    print(current_is_correct)
     show_overlay_message(current_message, current_sub_message, current_is_correct)
 
 
@@ -169,7 +175,7 @@ def update_timer():
         # Se o tempo restante for 0 ou menos, chama a função show_final_message
         else:
             #show_final_message(in_time=False)
-            show_incorrect_message(current_question)
+            show_incorrect_message_by_timer(current_question)
 
     # Se o temporizador estiver pausado, imprime "Pausado" no console
     else:
@@ -216,6 +222,7 @@ def show_correct_message(question_index):
 
     # Marca que a resposta atual é correta, alterando o estado da variável global
     current_is_correct = True
+    print(current_answer - 1)
 
     # Muda a cor de fundo da resposta correta para um tom específico (#4D148C)
     change_answer_bg_color(current_answer - 1, "#4D148C")  # Mudar a cor para verde
@@ -244,29 +251,40 @@ def show_incorrect_message(question_index):
     change_answer_bg_color(current_answer - 1, "red")  # Mudar a cor para vermelho
 
 def show_incorrect_message_by_timer(question_index):
+    # Declaração de variáveis globais usadas na função
     global current_message, current_sub_message, current_is_correct
-    global is_paused, correct_answers
+    global is_paused
 
+    print("question_index")
+    print(question_index)
     # Define a variável is_paused como True para pausar o timer ou outras atividades dependentes desse estado
     is_paused = True
     reset_timer_question()
 
     # Define a mensagem principal que será mostrada ao usuário, com base no índice da pergunta incorreta
     current_message = incorrect_messages[question_index]
+    print("current_message")
+    print(current_message)
 
     # Define a mensagem secundária, que pode conter informações adicionais, com base no índice da pergunta
     current_sub_message = message_after_reply[question_index]
+    print("current_sub_message")
+    print(current_sub_message)
 
     # Marca que a resposta atual é incorreta, alterando o estado da variável global
     current_is_correct = False
+    #print()
 
+    current_answer = correct_answers[question_index]
+    print("current_answer = correct_answers[question_index]")
+    print(current_answer)
+    print(current_answer - 1)
 
-    # Muda a cor de fundo da resposta correta para indicar ao usuário qual era a resposta correta
-    correct_answer_index = correct_answers[question_index]  # Corrige o índice para 0-based
-    change_answer_bg_color(correct_answer_index, "#4D148C")  # Mudar a cor para verde
-
-    # Mostra a mensagem sobreposta com a mensagem atual, sub-mensagem e se a resposta está correta ou não
-    show_overlay_message(current_message, current_sub_message, current_is_correct)
+    # Muda a cor de fundo da resposta incorreta para vermelho
+    change_answer_bg_color(current_answer - 1, "#4d148c")  # Mudar a cor para vermelho
+    print("current_answer")
+    print(current_answer)
+    print(current_answer - 1)
 
 
 
@@ -520,7 +538,7 @@ def show_overlay_message(message, sub_message, is_correct):
     canvas.delete("overlay")
 
     # Cria uma imagem semi-transparente
-    overlay_img = Image.new("RGBA", (screen_width - screen_width // 12, screen_height // 2 + screen_height // 4), (0, 0, 0, int(255 * 0.7)))
+    overlay_img = Image.new("RGBA", (screen_width - screen_width // 12, screen_height), (255, 255, 255, 255))
     overlay_photo = ImageTk.PhotoImage(overlay_img)
 
     # Adiciona a imagem semi-transparente ao canvas
@@ -540,7 +558,7 @@ def show_overlay_message(message, sub_message, is_correct):
 
     # Cria o texto secundário na sobreposição
     canvas.create_text(screen_width // 2, screen_height // 2, text=sub_message, font=custom_font2,
-                               fill="white", width=text_width)
+                               fill="black", width=text_width)
 
     # Configura para chamar a função next_question após 5000 milissegundos (5 segundos)
     root.after(15000, next_question)
