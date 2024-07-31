@@ -215,6 +215,7 @@ def update_timer():
         # Se o tempo restante for 0 ou menos, chama a função show_final_message
         else:
             #show_final_message(in_time=False)
+            set_rfid_allowed(False)
             show_incorrect_message_by_timer(current_question)
 
     # Se o temporizador estiver pausado, imprime "Pausado" no console
@@ -587,9 +588,11 @@ def show_overlay_message(message, sub_message, is_correct):
         # Configura para chamar a função resume_timer após 5000 milissegundos (5 segundos)
         root.after(15000, resume_timer)
 
-def show_final_message(in_time):
+def show_final_message(in_time, current_hit):
     # Declaração de variáveis globais usadas na função
     global logo_img, logo_photo, current_hits, current_question, time_left, is_paused
+    global selected_language
+    selected_language = "en"
 
     # Pausa o temporizador
     is_paused = True
@@ -601,16 +604,16 @@ def show_final_message(in_time):
     canvas.delete("all")
 
     # Define as mensagens principais e secundárias com base no desempenho do usuário
-    if current_hits > 3 and in_time is True:
+    if current_hit > 3 and in_time is True:
         main_message_pt = "PARABÉNS!"
         main_message_en = "CONGRATULATIONS!"
         sub_message_pt = f"Desempenho {current_hits}/5"
         sub_message_en = f"Performance {current_hits}/5"
-        last_message_pt = f"RETIRE SEU BRINDE"
-        last_message_en = f"COLLECT YOUR GIFT"
+        last_message_pt = f"RETIRE SEU BRINDE!"
+        last_message_en = f"COLLECT YOUR GIFT!"
     else:
         main_message_pt = "QUE PENA, NÂO FOI DESSA VEZ"
-        main_message_en = "What a pity, IT WAS NOT THIS TIME"
+        main_message_en = "WHAT A PITY, IT WAS NOT THIS TIME"
         sub_message_pt = f"Desempenho {current_hits}/5"
         sub_message_en = f"Performance {current_hits}/5"
         last_message_pt = None
@@ -619,41 +622,54 @@ def show_final_message(in_time):
     # Define a imagem de fundo do canvas
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
 
-    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
+    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário.
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
-    logo_img = logo_img.resize((550, 152), Image.Resampling.LANCZOS)
+    logo_img = logo_img.resize((480, 133), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
 
-    # Posiciona o logo da FedEx no centro da tela
-    canvas.create_image(screen_width // 2, 100, image=logo_photo, anchor="center")
+    # Posiciona o logo da FedEx no centro da tela.
+    canvas.create_image(screen_width // 2, screen_height // 4, image=logo_photo, anchor="center")
 
     # Define diferentes fontes personalizadas
-    custom_font1 = tkFont.Font(family="Sans Light", size=40)
-    custom_font2 = tkFont.Font(family="Sans Light", size=24)
-    custom_font3 = tkFont.Font(family="Sans Light", size=70)
+    custom_font1 = tkFont.Font(family="Sans BOLD", size=70)
+    custom_font2 = tkFont.Font(family="Sans Light", size=65)
+    custom_font3 = tkFont.Font(family="Sans BOLD", size=110)
 
     # Verifica a linguagem selecionada e adiciona as mensagens correspondentes ao canvas
     if selected_language == "pt":
-        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_pt, font=custom_font1, fill="black")
-        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_pt, font=custom_font2, fill="black")
 
-        if current_hits > 3 and in_time is True:
-            x1, y1 = screen_width // 2 - (screen_width // 4) + 100, screen_height // 2 + 125  # Início do retângulo
-            x2, y2 = screen_width // 2 + (screen_width // 4) - 100, screen_height // 2 + 150  # Fim do retângulo
-            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='#4D148C', width=2, fill='#4D148C')
-            canvas.create_text(screen_width // 2, screen_height // 2 + 160, text=last_message_pt, font=custom_font3, fill="black")
+
+        if current_hit > 3 and in_time is True:
+            custom_font1 = tkFont.Font(family="Sans BOLD", size=90)
+            x1, y1 = screen_width // 2 - (screen_width // 8) + 20, screen_height // 2 + 100 + 100  # Início do retângulo
+            x2, y2 = screen_width // 2 + (screen_width // 8) - 20, screen_height // 2 + 100 + 110  # Fim do retângulo
+            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=0, outline='#4D148C', width=2, fill='#4D148C')
+            canvas.create_text(screen_width // 2, screen_height // 2 + 400, text=last_message_pt, font=custom_font3, fill="black")
+
+        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_pt, font=custom_font1,
+                           fill="black")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 30, text=sub_message_pt, font=custom_font2,
+                           fill="black")
     else:
-        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_en, font=custom_font1, fill="black")
-        canvas.create_text(screen_width // 2, screen_height // 2 - 100, text=sub_message_en, font=custom_font2, fill="black")
 
-        if current_hits > 3 and in_time is True:
-            x1, y1 = screen_width // 2 - (screen_width // 4) + 100, screen_height // 2 + 125  # Início do retângulo
-            x2, y2 = screen_width // 2 + (screen_width // 4) - 100, screen_height // 2 + 150  # Fim do retângulo
-            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='#4D148C', width=2, fill='#4D148C')
-            canvas.create_text(screen_width // 2, screen_height // 2 + 160, text=last_message_en, font=custom_font3, fill="black")
+
+        if current_hit > 3 and in_time is True:
+            custom_font1 = tkFont.Font(family="Sans BOLD", size=80)
+            x1, y1 = screen_width // 2 - (screen_width // 8) + 20, screen_height // 2 + 100 + 100  # Início do retângulo
+            x2, y2 = screen_width // 2 + (screen_width // 8) - 20, screen_height // 2 + 100 + 110  # Fim do retângulo
+            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=0, outline='#4D148C', width=2, fill='#4D148C')
+            canvas.create_text(screen_width // 2, screen_height // 2 + 400, text=last_message_en, font=custom_font3, fill="black")
+
+        canvas.create_text(screen_width // 2, screen_height // 2 - 180, text=main_message_en, font=custom_font1,
+                           fill="black")
+        canvas.create_text(screen_width // 2, screen_height // 2 - 30, text=sub_message_en, font=custom_font2,
+                           fill="black")
 
     # Adiciona um evento para reiniciar o quiz ao clicar em qualquer parte da tela
     canvas.bind("<Button-1>", restart_quiz)
+
+    #Inicio o temporizador
+    Start_time_after_all()
 
 def restart_quiz(event=None):
     # Declaração de variáveis globais usadas na função
@@ -1378,8 +1394,8 @@ def show_language_selection():
         # Altera a cor do botão "PORTUGUÊS" quando o mouse está sobre ele
         pt_button.config(bg="white", fg="black")
         # Desenha um retângulo ao redor do botão
-        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 20
-        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180
+        x1, y1 = screen_width // 6 - 30, screen_height // 3 + 20
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 380
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
         # Reseta o temporizador de inatividade
         on_interaction2()
@@ -1388,8 +1404,8 @@ def show_language_selection():
         # Altera a cor do botão "ENGLISH" quando o mouse está sobre ele
         en_button.config(bg="white", fg="black")
         # Desenha um retângulo ao redor do botão
-        x1, y1 = screen_width // 6 - 30, screen_height // 4 + 220
-        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380
+        x1, y1 = screen_width // 6 - 30, screen_height // 3 + 520
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 880
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
         # Reseta o temporizador de inatividade
         on_interaction2()
@@ -1419,35 +1435,38 @@ def show_language_selection():
     logo_img = logo_img.resize((370, 103), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
     # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio
-    canvas.create_image(screen_width // 2, screen_width // 6, image=logo_photo, anchor="center")
+    canvas.create_image(screen_width // 2, screen_width // 6, image=logo_photo,
+                        anchor="center")
 
     # Define a posição e dimensões do retângulo ao redor do botão "PORTUGUÊS"
-    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 20
-    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 180
-    create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
+    x1, y1 = screen_width // 6 - 5, screen_height // 3 + 20
+    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 380
+    create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2,
+                             fill='black')
 
     # Define a fonte personalizada para os botões
-    custom_font = tkFont.Font(family="Sans Light", size=45)
+    custom_font = tkFont.Font(family="Sans BOLD", size=70)
 
     # Cria e posiciona o botão "PORTUGUÊS"
     pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0,
                           command=lambda: show_registration_form("pt"),
-                          fg="white", bg="black", width=42, height=1,
+                          fg="white", bg="black", width=25, height=2,
                           activebackground="white", activeforeground="black")
-    pt_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 100, anchor="center",
+    pt_button_window = canvas.create_window(screen_width // 2, screen_height // 3 + 200,
+                                            anchor="center",
                                             window=pt_button)
 
     # Define a posição e dimensões do retângulo ao redor do botão "ENGLISH"
-    x1, y1 = screen_width // 6 - 5, screen_height // 4 + 220
-    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 4 + 380
+    x1, y1 = screen_width // 6 - 5, screen_height // 3 + 520
+    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 880
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
 
     # Cria e posiciona o botão "ENGLISH"
     en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0,
                           command=lambda: show_registration_form("en"),
-                          fg="white", bg="black", width=42, height=1,
+                          fg="white", bg="black", width=25, height=2,
                           activebackground="white", activeforeground="black")
-    en_button_window = canvas.create_window(screen_width // 2, screen_height // 4 + 300, anchor="center",
+    en_button_window = canvas.create_window(screen_width // 2, screen_height // 3 + 700, anchor="center",
                                             window=en_button)
 
     # Adiciona eventos de interação para resetar o temporizador
@@ -1473,6 +1492,34 @@ def show_language_selection():
     Start_time_after_all()
     # Inicia o main loop do Tkinter para a interface gráfica
     root.mainloop()
+
+
+def show_resst_screen():
+    # Limpa todos os elementos do canvas
+    canvas.delete("all")
+    # Define a imagem de fundo
+    canvas.create_image(0, 0, image=background_photo, anchor="nw")
+    # Remove qualquer binding anterior de clique no canvas
+    canvas.unbind("<Button-1>")
+    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
+    logo_img = Image.open("fedexLogo.png").convert("RGBA")
+    logo_img = logo_img.resize((600, 166), Image.Resampling.LANCZOS)
+    logo_photo = ImageTk.PhotoImage(logo_img)
+    # Posiciona o logo da FedEx no centro da tela
+    canvas.create_image(screen_width // 2, screen_height // 2, image=logo_photo, anchor="center")
+    # Vincula o clique do mouse para chamar a função show_language_selection
+    canvas.bind("<Button-1>", lambda event: show_language_selection())
+
+    # Adicione estas linhas para chamar as diferentes versões de show_final_message
+    # Exemplo 1: usuário teve um desempenho excelente
+    show_final_message(in_time=True, current_hit = 3)
+    current_hits = 4
+    # Exemplo 2: usuário não conseguiu completar a tempo
+    #show_final_message(in_time=False)
+
+    # Inicia o main loop do Tkinter para a interface gráfica
+    root.mainloop()
+
 
 # Configuração da interface gráfica
 root = tk.Tk()  # Cria a janela principal do Tkinter
@@ -1511,4 +1558,6 @@ threading.Thread(target=read_rfid, daemon=True).start()
 root.after(1000, update_rfid_label)
 
 # Exibe a tela de descanso inicial
-show_rest_screen()
+#show_rest_screen()
+
+show_resst_screen()
