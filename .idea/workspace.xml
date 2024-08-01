@@ -5,11 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="4c7b6794-6efa-4310-ace3-46b74bd75c2d" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Quiz264.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz265.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Quiz266.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz267.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Quiz268.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Quiz263.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz263.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Quiz266.py" beforeDir="false" afterPath="$PROJECT_DIR$/Quiz266.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/registration_data.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/registration_data.xlsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -287,6 +286,31 @@
           <url>file://$PROJECT_DIR$/Quiz266.py</url>
           <line>496</line>
           <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz267.py</url>
+          <line>601</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz267.py</url>
+          <line>847</line>
+          <option name="timeStamp" value="42" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz267.py</url>
+          <line>846</line>
+          <option name="timeStamp" value="43" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz268.py</url>
+          <line>853</line>
+          <option name="timeStamp" value="44" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/Quiz268.py</url>
+          <line>855</line>
+          <option name="timeStamp" value="45" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

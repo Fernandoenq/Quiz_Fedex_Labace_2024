@@ -710,17 +710,20 @@ def start_quiz(language):
     if language == "pt":
         questions = [
             "A FedEx Express é hoje a maior empresa de entregas rápidas do planeta. Quais serviços ela oferece no Brasil?",
-            "Pensando na agilidade da entrega internacional, a FedEx oferece o serviço International Priority e International Priority Freight aos clientes. Qual o tempo de trânsito médio destes serviços?",
-            "Para o mercado de aviação, algumas soluções de entrega são extremamente importantes. Qual das soluções abaixo a FedEx oferece para as importações e exportações?",
-            "A FedEx transporta mercadorias de diversos perfis, valores, tamanhos e pesos. Para o serviço internacional, dos itens abaixo qual tipo de produto a FedEx também transporta?",
+            "Pensando na agilidade da entrega internacional, a FedEx oferece o serviço International Priority e International "
+            "Priority Freight aos clientes. Qual o tempo de trânsito médio destes serviços?",
+            "Para o mercado de aviação, algumas soluções de entrega são extremamente importantes. Qual das soluções abaixo a FedEx "
+            "oferece para as importações e exportações?",
+            "A FedEx transporta mercadorias de diversos perfis, valores, tamanhos e pesos. Para o serviço internacional, dos itens "
+            "abaixo qual tipo de produto a FedEx também transporta?",
             "A FedEx vem trabalhando para entregar um futuro mais sustentável. A meta é neutralizar as emissões de carbono em suas operações até 2040 em quantos por cento?"
         ]
         answers = [
-            ["Transporte internacional", "Transporte nacional", "Serviços de logística", "Todos os anteriores"],
+            ["Transporte internacional", "Transporte nacional", "Soluções em Supply Chain e Logística", "Todos os anteriores"],
             ["1 a 3 dias úteis", "1 a 5 dias úteis", "2 a 4 dias úteis", "2 a 5 dias úteis"],
             ["Alto nível de segurança das cargas", "Integração de sistemas para automação do processo",
              "Rastreamento em tempo real", "Todas as anteriores"],
-            ["Produtos de tabaco", "Produtos perigosos ", "Bilhetes de loteria", "Correspondência"],
+            ["Produtos de tabaco", "Produtos perigosos ", "Bilhetes de loteria", "Dinheiro em espécie"],
             ["30%", "50%", "100%", "70%"]
         ]
         correct_messages = [
@@ -774,12 +777,12 @@ def start_quiz(language):
             "FedEx has been working towards a more sustainable future. In percentage, what is FedEx´s goal to reduce carbon emissions in its operations by 2040?"
         ]
         answers = [
-            ["International transportation", "Domestic transportation", "Logistics services",
+            ["International transportation", "Domestic transportation", "Supply Chain and Logistics Solutions",
              "All of the above (correct)"],
             ["1 to 3 business days ", "1 to 5 business days", "2 to 4 business days", "2 to 5 business days"],
             ["High-level cargo security", "System integration for process automation", "Real-time tracking",
              "All of the above "],
-            ["Tobacco products", "Dangerous goods ", "Lottery tickets", "Correspondence"],
+            ["Tobacco products", "Dangerous goods ", "Lottery tickets", "Money"],
             ["30%", "50%", "100%", "70%"]
         ]
         correct_messages = [
@@ -1204,7 +1207,7 @@ def show_registration_form(language):
 
     # Define os rótulos e suas versões em inglês
     labels = ["Nome e Sobrenome", "Email", "Celular", "Cidade", "UF", "Empresa", "Segmento", "CNPJ"]
-    labels_en = ["Name and Last Name", "Email", "Phone", "City", "State", "Company", "Segment", "EIN"]
+    labels_en = ["Name and Last Name", "Email", "Phone", "City", "State", "Company", "Segment", "TAX ID"]
 
     # Define a posição Y de cada rótulo
     y_distance_standar = screen_height // 7
@@ -1306,7 +1309,7 @@ def show_registration_form(language):
 
     # Define o placeholder_text para phone_entry e cnpj_entry
     phone_entry.placeholder_text = "Celular" if language == "pt" else "Phone"
-    cnpj_entry.placeholder_text = "CNPJ" if language == "pt" else "EIN"
+    cnpj_entry.placeholder_text = "CNPJ" if language == "pt" else "TAX ID"
 
     # ----------------------------------- Fim do Formulario de registro ------------------------------
 
