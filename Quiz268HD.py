@@ -457,21 +457,21 @@ def show_question(question, possible_answers, current_question, in_weight):
 
     # Carrega o logo da FedEx, redimensiona e converte para o formato necessário.
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
-    logo_img = logo_img.resize((480, 133), Image.Resampling.LANCZOS)
+    logo_img = logo_img.resize((300, 83), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
 
-    # Posiciona o logo da FedEx no centro da tela.
+    # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio
     canvas.create_image(screen_width // 2, screen_height // 8, image=logo_photo, anchor="center")
 
     # Define diferentes fontes personalizadas
-    custom_font1 = tkFont.Font(family="Sans Light", size=28) #fonte temporizador
-    custom_font2 = tkFont.Font(family="Sans Light", size=54) #fonte das perguntas
+    custom_font1 = tkFont.Font(family="Sans Light", size=20) #fonte temporizador
+    custom_font2 = tkFont.Font(family="Sans Light", size=23) #fonte das perguntas
 
     # Adiciona o temporizador ao canvas
-    timer_text_id = canvas.create_text(screen_width - 400, screen_height // 8 + int(133 / 4) + 5, text=f'Tempo: {time_left}s', font=custom_font1,
+    timer_text_id = canvas.create_text(screen_width - 200, screen_height // 8 + int(133 / 4), text=f'Tempo: {time_left}s', font=custom_font1,
                                        width=900, fill="black")
 
-    y_offset = 100  # Ajuste este valor para descer as perguntas e respostas
+    y_offset = 40  # Ajuste este valor para descer as perguntas e respostas
     x1, y1 = screen_width // 10, screen_height // 5 + y_offset  # Início do retângulo a 1/10 da largura
     x2, y2 = screen_width * 9 // 10, screen_height // 3 + y_offset  # Fim do retângulo a 9/10 da largura
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white')
@@ -492,8 +492,8 @@ def show_question(question, possible_answers, current_question, in_weight):
     # Loop para criar os textos das respostas e seus fundos
     for idx, answer in enumerate(possible_answers):
         # Define as coordenadas dos retângulos de fundo das respostas
-        y_answer_offset = y_offset + 200  # Ajuste adicional para as respostas
-        Y_difference_beetwen_question = 160
+        y_answer_offset = y_offset  # Ajuste adicional para as respostas
+        Y_difference_beetwen_question = 100
         x1, y1 = screen_width // 10, screen_height // 4 + 200 + idx * Y_difference_beetwen_question + y_answer_offset  # Início do retângulo a 1/10 da largura
         x2, y2 = screen_width * 9 // 10, screen_height // 4 + 310 + idx * Y_difference_beetwen_question + y_answer_offset  # Fim do retângulo a 9/10 da largura
         bg_id = create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white')
@@ -527,13 +527,13 @@ def show_box_image():
         boximg = Image.open("Box.png").convert("RGBA")
 
         # Redimensiona a imagem para 500x600 pixels usando a técnica de redimensionamento LANCZOS
-        boximg = boximg.resize((600, 500), Image.Resampling.LANCZOS)
+        boximg = boximg.resize((240, 371), Image.Resampling.LANCZOS)
 
         # Converte a imagem redimensionada para um objeto ImageTk.PhotoImage, que pode ser usado no canvas
         logo_photo_boximg = ImageTk.PhotoImage(boximg)
 
         # Cria uma imagem no canvas na posição especificada, com a imagem redimensionada e ancorada no centro
-        canvas.create_image(screen_width // 2, screen_height // 2 + (screen_height // 4), image=logo_photo_boximg,
+        canvas.create_image(screen_width // 2, screen_height // 2 + (screen_height // 4) + 100, image=logo_photo_boximg,
                             anchor="center")
 
     # Captura qualquer exceção que ocorra durante a execução do bloco try
@@ -562,13 +562,13 @@ def show_overlay_message(message, sub_message, is_correct):
     # Adiciona a imagem semi-transparente ao canvas
     canvas.create_image(90, 90, image=overlay_photo, anchor="nw", tags="overlay")
 
-    text_width = screen_width - 250
+    text_width = screen_width - 200
     text_width_title = screen_width // 2 + 150
 
 
     # Define as fontes personalizadas para o texto
-    custom_font1 = tkFont.Font(family="Sans BOLD", size=160)
-    custom_font2 = tkFont.Font(family="Sans Light", size=60)
+    custom_font1 = tkFont.Font(family="Sans BOLD", size=100)
+    custom_font2 = tkFont.Font(family="Sans Light", size=30)
 
     # Cria o texto principal na sobreposição
     canvas.create_text(screen_width // 2, screen_height // 4 - 50, text=message, font=custom_font1,
@@ -983,14 +983,14 @@ def create_keyboard(root, canvas, language):
     ]
 
     # Configuração inicial para a posição e aparência dos botões.
-    x_offset = screen_width // 8 + 18  # Deslocamento inicial no eixo X
-    y_offset = screen_height // 2 - 5  # Deslocamento inicial no eixo Y
-    button_width = 6  # Largura do botão ajustada
-    button_height = 2  # Altura do botão ajustada
+    x_offset = screen_width // 8  # Deslocamento inicial no eixo X
+    y_offset = screen_height // 2 - 50  # Deslocamento inicial no eixo Y
+    button_width = 3  # Largura do botão ajustada
+    button_height = 1  # Altura do botão ajustada
     button_bg = '#d3d3d3'  # Cor de fundo do botão
     button_fg = 'black'  # Cor do texto do botão
-    button_font = tkFont.Font(family="Sans Light", size=30, weight='bold')  # Aumentando o tamanho da fonte para 30
-    button_spacing = 116  # Espaçamento horizontal entre as teclas aumentado
+    button_font = tkFont.Font(family="Sans Light", size=25, weight='bold')  # Aumentando o tamanho da fonte para 30
+    button_spacing = 60  # Espaçamento horizontal entre as teclas aumentado
 
     # Loop para criar e posicionar cada tecla no canvas.
     for i, key in enumerate(keys):
@@ -999,7 +999,7 @@ def create_keyboard(root, canvas, language):
 
         # Calcula a posição X e Y do botão no canvas.
         x = x_offset + col * (button_width * 10 + button_spacing)
-        y = y_offset + row * (button_height * 20 + button_spacing)
+        y = y_offset + row * (button_height * 30 + button_spacing)
 
         # Define a ação do botão; 'Backspace' tem uma ação especial.
         if key == 'Backspace':
@@ -1017,7 +1017,7 @@ def create_keyboard(root, canvas, language):
         canvas.create_window(x, y, window=button)
 
     #---------------------- Tecla de espaço ---------------------------------
-    space_button_width = int(screen_width // 28.5)  # Largura do botão de espaço ajustada
+    space_button_width = int(screen_width // 30)# Largura do botão de espaço ajustada
     print("tamanho")
     print(space_button_width)
     # Cria o botão de espaço separadamente, pois ele é maior e ocupa uma linha inteira.
@@ -1027,7 +1027,7 @@ def create_keyboard(root, canvas, language):
                              bg=button_bg, fg=button_fg, bd=1, relief='raised')
 
     # Posiciona o botão de espaço no canvas.
-    canvas.create_window(screen_width // 2, y_offset + ((screen_height // 6) + 35), window=space_button)
+    canvas.create_window(screen_width // 2, y_offset + ((screen_height // 6) + 85), window=space_button)
 
 def formatar_telefone(event=None):
     print("Valor telefone")
@@ -1213,7 +1213,7 @@ def show_registration_form(language):
 
     # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
-    logo_img = logo_img.resize((480, 133), Image.Resampling.LANCZOS)
+    logo_img = logo_img.resize((300, 83), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
 
     # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio
@@ -1225,17 +1225,17 @@ def show_registration_form(language):
 
     # Define a posição Y de cada rótulo
     y_distance_standar = screen_height // 7
-    y_positions = [y_distance_standar + 150 + 50 + 20,
-                   y_distance_standar + 250 + 100 + 40,
-                   y_distance_standar + 350 + 150 + 60,
-                   y_distance_standar + 450 + 200 + 80,
-                   y_distance_standar + 450 + 200 + 80,
-                   y_distance_standar + 550 + 250 + 100,
-                   y_distance_standar + 550 + 250 + 100,
-                   y_distance_standar + 650 + 300 + 120]
+    y_positions = [y_distance_standar + 150 - 30,
+                   y_distance_standar + 250 - 60,
+                   y_distance_standar + 350 - 90,
+                   y_distance_standar + 450 - 120,
+                   y_distance_standar + 450 - 120,
+                   y_distance_standar + 550 - 150,
+                   y_distance_standar + 550 - 150,
+                   y_distance_standar + 650 - 180]
 
     # Define a fonte personalizada
-    custom_font = tkFont.Font(family="Sans Light", size=45)
+    custom_font = tkFont.Font(family="Sans Light", size=20)
 
     # Cria uma lista para armazenar os campos de entrada (entries)
     entries = []
@@ -1244,9 +1244,9 @@ def show_registration_form(language):
     stardard_radius = 30  # Raio padrão
     standard_x_start = ((screen_width // 10) + 5) - 5  # X inicial padrão
     standard_x_end = screen_width - ((screen_width // 10) - 2)  # X final padrão
-    stardard_final_height = 120  # Altura padrão da caixa de cadastro
+    stardard_final_height = 40  # Altura padrão da caixa de cadastro
     color_background_insert = "#FAF9F6"  # Cor de fundo da área de texto
-    Widht_Box_insert_font = 51  # Largura da fonte da caixa de entrada
+    Widht_Box_insert_font = 55  # Largura da fonte da caixa de entrada
 
     # Loop para criar cada campo de entrada e seu respectivo rótulo
     for idx, label in enumerate(labels):
@@ -1284,7 +1284,7 @@ def show_registration_form(language):
 
 
             # Posiciona o campo de entrada no canvas
-            canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
+            canvas.create_window((x1 + x2) // 2, (y1 + y2) // 2, window=entry)
             # Adiciona o campo de entrada à lista de entradas
             entries.append(entry)
         else:
@@ -1296,12 +1296,12 @@ def show_registration_form(language):
                 x1, y1 = standard_x_start + 3, y_positions[idx] - 9  # Início do retângulo branco
                 x2, y2 = screen_width // 2 + 177 - 3, y_positions[idx] + stardard_final_height - 6  # Fim do retângulo branco
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1, fill=color_background_insert)
-                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.60), fg="black", bg=color_background_insert, bd=0)
+                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.7), fg="black", bg=color_background_insert, bd=0)
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
                 entry.bind("<KeyRelease>", lambda event: check_fields(language))
-                canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
+                canvas.create_window((x1 + x2) // 2 + 1, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
             else:
                 x1, y1 = screen_width // 2 + 200, y_positions[idx] - 15  # Início do retângulo preto
@@ -1310,12 +1310,12 @@ def show_registration_form(language):
                 x1, y1 = screen_width // 2 + 203 + 3, y_positions[idx] - 9  # Início do retângulo branco
                 x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6  # Fim do retângulo branco
                 create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1, fill=color_background_insert)
-                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.38) // 2 + 10, fg="black", bg=color_background_insert, bd=0)
+                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.05) // 2 + 12, fg="black", bg=color_background_insert, bd=0)
                 entry.insert(0, placeholder_text)
                 entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
                 entry.bind("<KeyRelease>", lambda event: check_fields(language))
-                canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
+                canvas.create_window((x1 + x2) // 2 + 4, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
 
     # Atribui os campos de entrada às variáveis globais para serem acessíveis em outras partes do programa
@@ -1328,7 +1328,7 @@ def show_registration_form(language):
     # ----------------------------------- Fim do Formulario de registro ------------------------------
 
     # ----------------------------------- Botões de iniciar e voltar ---------------------------------
-    y_btn_position = screen_height // 2 + (screen_height // 4)
+    y_btn_position = screen_height // 2 + (screen_height // 4 + 70)
 
     # Cria e posiciona o botão de "INICIAR"/"START" no canvas
     x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do retângulo preto
@@ -1340,7 +1340,7 @@ def show_registration_form(language):
     register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START",
                                 font=custom_font,
                                 command=save_registration_data, fg="white", bd=0,
-                                bg="black", width=24, height=2,
+                                bg="black", width=11, height=2,
                                 activebackground="white", activeforeground="black",
                                 highlightthickness=0, state=tk.DISABLED)
     canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25,
@@ -1354,7 +1354,7 @@ def show_registration_form(language):
     back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK",
                             font=custom_font,
                             command=back_PTEN, fg="white", bd=0,
-                            bg="black", width=24, height=2,
+                            bg="black", width=11, height=2,
                             activebackground="white", activeforeground="black",
                             highlightthickness=0)
     canvas.create_window(screen_width // 2 - (screen_width // 4), y_btn_position + 25, window=back_button, anchor="center")
@@ -1389,7 +1389,7 @@ def show_rest_screen():
     canvas.unbind("<Button-1>")
     # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
-    logo_img = logo_img.resize((600, 166), Image.Resampling.LANCZOS)
+    logo_img = logo_img.resize((300, 83), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
     # Posiciona o logo da FedEx no centro da tela
     canvas.create_image(screen_width // 2, screen_height // 2, image=logo_photo, anchor="center")
@@ -1413,8 +1413,8 @@ def show_language_selection():
         # Altera a cor do botão "PORTUGUÊS" quando o mouse está sobre ele
         pt_button.config(bg="white", fg="black")
         # Desenha um retângulo ao redor do botão
-        x1, y1 = screen_width // 6 - 30, screen_height // 3 + 20
-        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 380
+        x1, y1 = screen_width // 6 - 5, screen_height // 3 + 60
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 340
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
         # Reseta o temporizador de inatividade
         on_interaction2()
@@ -1423,8 +1423,8 @@ def show_language_selection():
         # Altera a cor do botão "ENGLISH" quando o mouse está sobre ele
         en_button.config(bg="white", fg="black")
         # Desenha um retângulo ao redor do botão
-        x1, y1 = screen_width // 6 - 30, screen_height // 3 + 520
-        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 880
+        x1, y1 = screen_width // 6 - 5, screen_height // 3 + 390
+        x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 670
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
         # Reseta o temporizador de inatividade
         on_interaction2()
@@ -1451,41 +1451,41 @@ def show_language_selection():
     canvas.unbind("<Button-1>")
     # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
-    logo_img = logo_img.resize((370, 103), Image.Resampling.LANCZOS)
+    logo_img = logo_img.resize((300, 83), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
+
     # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio
-    canvas.create_image(screen_width // 2, screen_width // 6, image=logo_photo,
-                        anchor="center")
+    canvas.create_image(screen_width // 2, screen_height // 8, image=logo_photo, anchor="center")
 
     # Define a posição e dimensões do retângulo ao redor do botão "PORTUGUÊS"
-    x1, y1 = screen_width // 6 - 5, screen_height // 3 + 20
-    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 380
+    x1, y1 = screen_width // 6 - 5, screen_height // 3 + 60
+    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 340
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2,
                              fill='black')
 
     # Define a fonte personalizada para os botões
-    custom_font = tkFont.Font(family="Sans BOLD", size=70)
+    custom_font = tkFont.Font(family="Sans BOLD", size=60)
 
     # Cria e posiciona o botão "PORTUGUÊS"
     pt_button = tk.Button(root, text="PORTUGUÊS", font=custom_font, bd=0,
                           command=lambda: show_registration_form("pt"),
-                          fg="white", bg="black", width=25, height=2,
+                          fg="white", bg="black", width=12, height=2,
                           activebackground="white", activeforeground="black")
     pt_button_window = canvas.create_window(screen_width // 2, screen_height // 3 + 200,
                                             anchor="center",
                                             window=pt_button)
 
     # Define a posição e dimensões do retângulo ao redor do botão "ENGLISH"
-    x1, y1 = screen_width // 6 - 5, screen_height // 3 + 520
-    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 880
+    x1, y1 = screen_width // 6 - 5, screen_height // 3 + 390
+    x2, y2 = screen_width // 2 + (screen_width // 3), screen_height // 3 + 670
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
 
     # Cria e posiciona o botão "ENGLISH"
     en_button = tk.Button(root, text="ENGLISH", font=custom_font, bd=0,
                           command=lambda: show_registration_form("en"),
-                          fg="white", bg="black", width=25, height=2,
+                          fg="white", bg="black", width=12, height=2,
                           activebackground="white", activeforeground="black")
-    en_button_window = canvas.create_window(screen_width // 2, screen_height // 3 + 700, anchor="center",
+    en_button_window = canvas.create_window(screen_width // 2, screen_height // 3 + 530, anchor="center",
                                             window=en_button)
 
     # Adiciona eventos de interação para resetar o temporizador
