@@ -603,7 +603,8 @@ def show_overlay_message(message, sub_message, is_correct):
 
 def show_final_message(in_time):
     # Declaração de variáveis globais usadas na função
-    global logo_img, logo_photo, current_hits, current_question, time_left, is_paused
+    global logo_img, logo_photo, current_question, time_left, is_paused, current_hits
+    #selected_language = "pt" #Remover
 
     # Pausa o temporizador
     is_paused = True
@@ -635,21 +636,22 @@ def show_final_message(in_time):
 
     # Carrega o logo da FedEx, redimensiona e converte para o formato necessário.
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
-    logo_img = logo_img.resize((480, 133), Image.Resampling.LANCZOS)
+    logo_img = logo_img.resize((300, 83), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
 
-    # Posiciona o logo da FedEx no centro da tela.
-    canvas.create_image(screen_width // 2, screen_height // 4, image=logo_photo, anchor="center")
+    # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio
+    canvas.create_image(screen_width // 2, screen_height // 8, image=logo_photo, anchor="center")
 
     # Define diferentes fontes personalizadas
-    custom_font1 = tkFont.Font(family="Sans BOLD", size=70)
-    custom_font2 = tkFont.Font(family="Sans Light", size=65)
-    custom_font3 = tkFont.Font(family="Sans BOLD", size=110)
+
+    custom_font1 = tkFont.Font(family="Sans BOLD", size=39)
+    custom_font2 = tkFont.Font(family="Sans Light", size=35)
+    custom_font3 = tkFont.Font(family="Sans BOLD", size=59)
 
     # Verifica a linguagem selecionada e adiciona as mensagens correspondentes ao canvas
     if selected_language == "pt":
         if current_hits > 3 and in_time is True:
-            custom_font1 = tkFont.Font(family="Sans BOLD", size=90)
+            custom_font1 = tkFont.Font(family="Sans BOLD", size=59)
             x1, y1 = screen_width // 2 - (screen_width // 8) + 20, screen_height // 2 + 100 + 100  # Início do retângulo
             x2, y2 = screen_width // 2 + (screen_width // 8) - 20, screen_height // 2 + 100 + 110  # Fim do retângulo
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=0, outline='#4D148C', width=2, fill='#4D148C')
@@ -661,7 +663,7 @@ def show_final_message(in_time):
                            fill="black")
     else:
         if current_hits > 3 and in_time is True:
-            custom_font1 = tkFont.Font(family="Sans BOLD", size=80)
+            custom_font1 = tkFont.Font(family="Sans BOLD", size=49)
             x1, y1 = screen_width // 2 - (screen_width // 8) + 20, screen_height // 2 + 100 + 100  # Início do retângulo
             x2, y2 = screen_width // 2 + (screen_width // 8) - 20, screen_height // 2 + 100 + 110  # Fim do retângulo
             create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=0, outline='#4D148C', width=2, fill='#4D148C')
@@ -1531,7 +1533,7 @@ def DEBUG_Last_page():
 
     # Adicione estas linhas para chamar as diferentes versões de show_final_message
     # Exemplo 1: usuário teve um desempenho excelente
-    show_final_message(in_time=True, current_hits = 3)
+    show_final_message(in_time=True, current_hits = 4)
     current_hits = 4
     # Exemplo 2: usuário não conseguiu completar a tempo
     #show_final_message(in_time=False)
