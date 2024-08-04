@@ -880,11 +880,14 @@ def save_registration_data(language):
     start_quiz(selected_language)  # Inicia o quiz com base no idioma selecionado
 
 def on_entry_click(event, placeholder_text, idx):
-    #print("Entrou no on_entry_click")
-    #print(event)
-    #print(placeholder_text)
-    #print(idx)
+    print("Entrou no on_entry_click")
+    print(event)
+    print(placeholder_text)
+    print(idx)
     global active_entry  # Declara a variável global active_entry
+    active_entry = event.widget  # Define active_entry como o widget que disparou o evento
+    print("active_entry")
+    print(active_entry)
 
     phone = event.widget.get()
     phone_clean = re.sub(r'[\s\(\)\-]', '', phone)
@@ -892,17 +895,21 @@ def on_entry_click(event, placeholder_text, idx):
     match = regex.match(phone_clean)
 
     if match:
+        print("ENTROU NO EVENT CELULAR TEXTO PRETO")
         event.widget.config(fg="black")  # Muda a cor do texto para preto
         return
 
 
     #print("Entrou no on_entry_click dentro de CNPJ")
-    cnpj = event.widget.get().replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
+
+    cnpj = event.widget.get().replace("CNPJ: ", "").replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
     if validar_cnpj(cnpj):
+        print("ENTROU NO EVENT CNPJ TEXTO PRETO")
         event.widget.config(fg="black")  # Muda a cor do texto para preto
         return
 
-    active_entry = event.widget  # Define active_entry como o widget que disparou o evento
+
+
     if event.widget.get() == placeholder_text or event.widget.get() == "Número inválido" or event.widget.get() == "CNPJ inválido":  # Verifica se o conteúdo do campo é o placeholder_text
         #print("Entrou no delete")
         #print(event.widget.get())
@@ -963,7 +970,7 @@ def check_fields(language):
     else:
         register_button.config(state=tk.DISABLED)
 
-def on_entry_click(event, placeholder_text, idx):
+"""def on_entry_click(event, placeholder_text, idx):
     global active_entry  # Declara a variável global active_entry
 
     phone = event.widget.get()
@@ -984,7 +991,7 @@ def on_entry_click(event, placeholder_text, idx):
     if event.widget.get() == placeholder_text or event.widget.get() == "Número inválido" or event.widget.get() == "CNPJ inválido":  # Verifica se o conteúdo do campo é o placeholder_text
         event.widget.delete(0, "end")  # Se for, apaga o texto do campo
         event.widget.config(fg="black")  # Muda a cor do texto para preto
-
+"""
 def on_focusout(event, placeholder_text):
     # Quando o campo de entrada perde o foco, esta função é chamada.
     if event.widget.get() == "":
@@ -1142,7 +1149,7 @@ def formatar_telefone(event=None):
     telefone_formatado = ""
 
     if len(telefone) > 0:
-        telefone_formatado = "DDD: +"
+        telefone_formatado = "+"
     if len(telefone) > 2:
         telefone_formatado += telefone[:2] + " "
     if len(telefone) > 4:
@@ -1165,29 +1172,36 @@ def formatar_telefone(event=None):
 def formatar_e_validar_cnpj(event=None):
     # Obtém o texto do campo de entrada de CNPJ e remove caracteres indesejados
     cnpj = cnpj_entry.get().replace("CNPJ:", "").replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
+    print(cnpj_entry.get())
+    print(cnpj)
 
     # Se o CNPJ for "99999999999999", formata-o diretamente e retorna
     if cnpj == "99999999999999":
+        print("formatou 99")
+
         cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
         cnpj_entry.delete(0, tk.END)
+        print(cnpj_formatado)
+        print(type(cnpj_formatado))
         cnpj_entry.insert(0, cnpj_formatado)
         return
 
     # Se o CNPJ não for válido
     if not validar_cnpj(cnpj):
         if cnpj_entry.get() == "" or cnpj_entry.get() == cnpj_entry.placeholder_text:
+            print("CNPJ vazio")
             #print("if 1")
             cnpj_entry.delete(0, tk.END)
             cnpj_entry.insert(0, cnpj_entry.placeholder_text)
         else:
-            #print("if 1")
+            print("Inválido")
             cnpj_entry.delete(0, tk.END)
             cnpj_entry.insert(0, "CNPJ inválido")
         cnpj_entry.config(fg="black")
         return
 
-    cnpj = cnpj[:14]  # Limita a quantidade de dígitos do CNPJ
-    cnpj_formatado = ""
+    #cnpj = cnpj[:14]  # Limita a quantidade de dígitos do CNPJ
+    """cnpj_formatado = ""
 
     # Formata o CNPJ adicionando os caracteres apropriados
     if len(cnpj) > 0:
@@ -1201,14 +1215,23 @@ def formatar_e_validar_cnpj(event=None):
     if len(cnpj) > 12:
         cnpj_formatado += cnpj[8:12] + "-"
     if len(cnpj) > 0:
-        cnpj_formatado += cnpj[12:]
+        cnpj_formatado += cnpj[12:]"""
 
-    # Atualiza o campo de entrada com o CNPJ formatado
-    cnpj_entry.delete(0, tk.END)
-    cnpj_entry.insert(0, cnpj_formatado)
+    if len(cnpj) == 14:
+        cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
+
+        # Atualiza o campo de entrada com o CNPJ formatado
+        cnpj_entry.delete(0, tk.END)
+        print("Valor CNPJ que deveria ser aceito para edit")
+        print(cnpj_formatado)
+        print(type(cnpj_formatado))
+        cnpj_entry.insert(0, cnpj_formatado)
+        #cnpj_entry.insert(0, "CNPJ: 55.839.541/0001-08")
+        #cnpj_entry.insert(0, "12.345.678/910-11")
 
     # Verifica se o campo está vazio ou igual ao placeholder_text
     if not cnpj or cnpj_formatado.strip() == cnpj_entry.placeholder_text:
+        print("last If do cnpj")
         cnpj_entry.insert(0, cnpj_entry.placeholder_text)
         cnpj_entry.config(fg="black")
 
@@ -1348,12 +1371,13 @@ def show_registration_form(language):
             # Adiciona eventos para quando o campo ganha ou perde o foco, para manipular o placeholder text
             entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
 
-
+            #
             # Adiciona eventos específicos para formatação de telefone e validação de CNPJ para os respectivos campos
             if idx == 2 and language == "pt":  # Index 2 é o campo de telefone (Celular)
                 entry.bind("<FocusOut>", formatar_telefone)
             elif idx == 7 and language == "pt":  # Index 7 é o campo de CNPJ
-                entry.bind("<FocusOut>", formatar_e_validar_cnpj)
+                #entry.bind("<FocusOut>", formatar_e_validar_cnpj)
+                print("if 7")
             else:
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
             entry.bind("<KeyRelease>", lambda event: check_fields(language))
@@ -1399,8 +1423,10 @@ def show_registration_form(language):
     name_entry, email_entry, phone_entry, city_entry, uf_entry, company_entry, segment_entry, cnpj_entry = entries
 
     # Define o placeholder_text para phone_entry e cnpj_entry
+
     phone_entry.placeholder_text = "Celular" if language == "pt" else "Phone"
     cnpj_entry.placeholder_text = "CNPJ" if language == "pt" else "TAX ID"
+    cnpj_entry.bind("<FocusOut>", formatar_e_validar_cnpj)
 
     # ----------------------------------- Fim do Formulario de registro ------------------------------
 

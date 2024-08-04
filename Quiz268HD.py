@@ -879,11 +879,12 @@ def save_registration_data():
     start_quiz(selected_language)  # Inicia o quiz com base no idioma selecionado
 
 def on_entry_click(event, placeholder_text, idx):
-    #print("Entrou no on_entry_click")
-    #print(event)
-    #print(placeholder_text)
-    #print(idx)
+    print("Entrou no on_entry_click")
+    print(event)
+    print(placeholder_text)
+    print(idx)
     global active_entry  # Declara a variável global active_entry
+    active_entry = event.widget  # Define active_entry como o widget que disparou o evento
 
     phone = event.widget.get()
     phone_clean = re.sub(r'[\s\(\)\-]', '', phone)
@@ -895,13 +896,14 @@ def on_entry_click(event, placeholder_text, idx):
         return
 
 
-    #print("Entrou no on_entry_click dentro de CNPJ")
-    cnpj = event.widget.get().replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
+    cnpj = event.widget.get().replace("CNPJ:").replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
     if validar_cnpj(cnpj):
+        print("Entrou no on_entry_click dentro de CNPJ")
+
         event.widget.config(fg="black")  # Muda a cor do texto para preto
         return
 
-    active_entry = event.widget  # Define active_entry como o widget que disparou o evento
+
     if event.widget.get() == placeholder_text or event.widget.get() == "Número inválido" or event.widget.get() == "CNPJ inválido":  # Verifica se o conteúdo do campo é o placeholder_text
         #print("Entrou no delete")
         #print(event.widget.get())

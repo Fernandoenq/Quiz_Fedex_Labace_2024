@@ -10,7 +10,7 @@ import re
 import time
 
 # Configuração da porta serial
-port = 'COM13'
+port = 'COM11'
 baud_rate = 9600
 rfid_data = ""
 current_question = 0
@@ -849,7 +849,7 @@ def back_PTEN():
     selected_language = ""  # Reseta a variável de idioma selecionado para uma string vazia
     show_language_selection()  # Chama a função para exibir a tela de seleção de idioma
 
-def save_registration_data(language):
+def save_registration_data():
     # Coleta os dados de entrada do formulário e armazena em um dicionário
     data = {
         "Nome": name_entry.get(),  # Obtém o valor do campo de entrada "Nome"
@@ -858,8 +858,7 @@ def save_registration_data(language):
         "Cidade": city_entry.get(),  # Obtém o valor do campo de entrada "Cidade"
         "UF": uf_entry.get(),  # Obtém o valor do campo de entrada "UF"
         "Empresa": company_entry.get(),  # Obtém o valor do campo de entrada "Empresa"
-        "CNPJ": cnpj_entry.get() if language == "en" else ("" if cnpj_entry.get() == "CNPJ inválido" else (cnpj_entry.get() if formatar_e_validar_cnpj(cnpj_entry.get()) is None else "")),
-
+        "CNPJ": "" if cnpj_entry.get() == "CNPJ inválido" else (cnpj_entry.get() if formatar_e_validar_cnpj(cnpj_entry.get()) is None else ""),
   # Obtém o valor do campo de entrada "CNPJ"
         "Segmento": segment_entry.get()  # Obtém o valor do campo de entrada "Segmento"
     }
@@ -936,7 +935,7 @@ def check_fields(language):
 
     name = name_entry.get()
     email = email_entry.get()
-    phone = phone_entry.get().replace("DDD:", "")
+    phone = phone_entry.get()
     city = city_entry.get()
     uf = uf_entry.get()
     company = company_entry.get()
@@ -1003,7 +1002,7 @@ def key_pressed(char, language):
     print(active_entry.get())
     print(active_entry)
     if char is not None:
-        check_fields(language)
+        check_fields(language)  # Verifica se todos os campos estão preenchidos após a inserção da tecla
         current_text = active_entry.get()  # Obtém o texto atual do campo de entrada
         cursor_index = active_entry.index(tk.INSERT)  # Obtém a posição atual do cursor
         # Insere o novo caractere na posição do cursor
@@ -1017,20 +1016,23 @@ def key_pressed(char, language):
 
 def backspace_pressed(language):
     # Apaga o caractere imediatamente antes da posição atual do cursor ou o texto selecionado
+    print("active_entry.get()")
+    print(active_entry.get())
+    print(active_entry)
     if active_entry and len(active_entry.get()) > 0:
         try:
             # Tenta apagar o texto selecionado, se houver seleção
             selection_start = active_entry.index(tk.SEL_FIRST)
             selection_end = active_entry.index(tk.SEL_LAST)
             active_entry.delete(selection_start, selection_end)  # Apaga o texto selecionado
-            check_fields(language)
+            check_fields(language)  # Verifica se todos os campos estão preenchidos após a inserção da tecla
         except tk.TclError:
             # Caso não haja seleção, apaga o caractere antes da posição do cursor
             cursor_index = active_entry.index(tk.INSERT)  # Obtém a posição atual do cursor
             if cursor_index > 0:
                 active_entry.delete(cursor_index - 1)  # Apaga o caractere antes da posição do cursor
                 active_entry.icursor(cursor_index - 1)  # Move o cursor uma posição para trás
-                check_fields(language)
+                check_fields(language)  # Verifica se todos os campos estão preenchidos após a inserção da tecla
 
 def create_keyboard(root, canvas, language):
     # Lista de teclas que serão exibidas no teclado virtual.
@@ -1099,30 +1101,31 @@ def create_keyboard(root, canvas, language):
     canvas.create_window(screen_width // 2, y_offset + ((screen_height // 5) + 35), window=space_button)
 
 
+import re
+import tkinter as tk
+
+
+# Função para validar CNPJ (implementação simples)
+def validar_cnpj(cnpj):
+    return len(cnpj) == 14  # Exemplo de validação básica
+
 
 def formatar_telefone(event=None):
     if selected_language == "en":
         return
-    #print("Valor telefone")
-    #phone = phone_entry.get()
-    #print(phone)
 
-    phone = phone_entry.get().replace("DDD:","")
+    phone = phone_entry.get()
 
     # Remover espaços, parênteses e traços
     phone = re.sub(r'[\s\(\)\-]', '', phone)
-    #print("Telefone limpo:", phone)
 
     # Regex para verificar números de telefone brasileiros com 11 dígitos obrigatórios
     regex = re.compile(r'^(\+?55)?(\d{2})(\d{9})$')
 
     # Verificar se o telefone corresponde ao padrão
     match = regex.match(phone)
-    #print("Match:", match)
 
     if phone in ["Celular:", "Phone:"] or match is None:
-        #print("Entrou para resetar")
-
         if phone not in ["Celular:", "Phone:", ""]:
             phone_entry.delete(0, tk.END)
             phone_entry.insert(0, "Número inválido")
@@ -1131,67 +1134,43 @@ def formatar_telefone(event=None):
         phone_entry.delete(0, tk.END)
         phone_entry.insert(0, phone_entry.placeholder_text)
         phone_entry.config(fg="black")
-
         return
-
 
     telefone = phone.replace("+", "")
     if not telefone.startswith("55"):
         telefone = "55" + telefone
 
-    telefone_formatado = ""
+    # Checar novamente se o número está válido depois de adicionar o "55"
+    if regex.match(telefone):
+        return  # Se o número for válido, não faça nada
 
-    if len(telefone) > 0:
-        telefone_formatado = "DDD: +"
-    if len(telefone) > 2:
-        telefone_formatado += telefone[:2] + " "
-    if len(telefone) > 4:
-        telefone_formatado += "(" + telefone[2:4] + ") "
-    if len(telefone) > 9:
-        telefone_formatado += telefone[4:9] + "-" + telefone[9:]
-    elif len(telefone) > 4:
-        telefone_formatado += telefone[4:]
-
+    # Se chegar até aqui, o número foi considerado inválido
     phone_entry.delete(0, tk.END)
-    phone_entry.insert(0, telefone_formatado)
+    phone_entry.insert(0, "Número inválido")
 
-    # Verificar se o campo está vazio ou igual ao placeholder_text
-    if not telefone or telefone_formatado.strip() == phone_entry.placeholder_text:
-        #print("Entrou no if para resetar")
-
-        phone_entry.insert(0, phone_entry.placeholder_text)
-        phone_entry.config(fg="black")
 
 def formatar_e_validar_cnpj(event=None):
-    # Obtém o texto do campo de entrada de CNPJ e remove caracteres indesejados
-    cnpj = cnpj_entry.get().replace("CNPJ:", "").replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
+    cnpj = cnpj_entry.get().replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
 
-    # Se o CNPJ for "99999999999999", formata-o diretamente e retorna
     if cnpj == "99999999999999":
         cnpj_formatado = f"{cnpj[:2]}.{cnpj[2:5]}.{cnpj[5:8]}/{cnpj[8:12]}-{cnpj[12:]}"
         cnpj_entry.delete(0, tk.END)
         cnpj_entry.insert(0, cnpj_formatado)
         return
 
-    # Se o CNPJ não for válido
     if not validar_cnpj(cnpj):
         if cnpj_entry.get() == "" or cnpj_entry.get() == cnpj_entry.placeholder_text:
-            #print("if 1")
             cnpj_entry.delete(0, tk.END)
             cnpj_entry.insert(0, cnpj_entry.placeholder_text)
         else:
-            #print("if 1")
             cnpj_entry.delete(0, tk.END)
             cnpj_entry.insert(0, "CNPJ inválido")
         cnpj_entry.config(fg="black")
         return
 
-    cnpj = cnpj[:14]  # Limita a quantidade de dígitos do CNPJ
+    cnpj = cnpj[:14]
     cnpj_formatado = ""
 
-    # Formata o CNPJ adicionando os caracteres apropriados
-    if len(cnpj) > 0:
-        cnpj_formatado = "CNPJ: "
     if len(cnpj) > 2:
         cnpj_formatado += cnpj[:2] + "."
     if len(cnpj) > 5:
@@ -1203,14 +1182,13 @@ def formatar_e_validar_cnpj(event=None):
     if len(cnpj) > 0:
         cnpj_formatado += cnpj[12:]
 
-    # Atualiza o campo de entrada com o CNPJ formatado
     cnpj_entry.delete(0, tk.END)
     cnpj_entry.insert(0, cnpj_formatado)
 
-    # Verifica se o campo está vazio ou igual ao placeholder_text
     if not cnpj or cnpj_formatado.strip() == cnpj_entry.placeholder_text:
         cnpj_entry.insert(0, cnpj_entry.placeholder_text)
         cnpj_entry.config(fg="black")
+
 
 def validar_cnpj(cnpj):
     # Remover caracteres não numéricos
@@ -1241,66 +1219,46 @@ def validar_cnpj(cnpj):
     # Verificar se os dígitos verificadores estão corretos
     return cnpj[-2:] == f"{primeiro_digito}{segundo_digito}"
 
+
 def show_registration_form(language):
-    # Declaração de variáveis globais usadas na função
     global selected_language, name_entry, email_entry, phone_entry, city_entry, uf_entry, entries
     global company_entry, cnpj_entry, segment_entry, logo_img, logo_photo, active_entry, register_button
 
     def change_color_reg_1(event):
-        # Altera a cor do botão "INICIAR" quando o mouse está sobre ele
         register_button.config(bg="white", fg="black")
-
-        # Desenha um retângulo ao redor do botão
         x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do retângulo
         x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Fim do retângulo
-
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b1")
 
     def change_color_reg_2(event):
-        # Altera a cor do botão "VOLTAR" quando o mouse está sobre ele
         back_button.config(bg="white", fg="black")
-
-        # Desenha um retângulo ao redor do botão
         x1, y1 = screen_width // 10, y_btn_position - 65  # Início do retângulo
         x2, y2 = screen_width // 2.5, y_btn_position + 116  # Fim do retângulo
-
         create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='white', width=2, fill='white', tags="b2")
 
     def Remove_change_color_reg_1(event):
-        # Remove a alteração de cor e o retângulo ao redor do botão "INICIAR" quando o mouse sai
         register_button.config(bg="black", fg="white")
         canvas.delete("b1")
 
     def Remove_change_color_reg_2(event):
-        # Remove a alteração de cor e o retângulo ao redor do botão "VOLTAR" quando o mouse sai
         back_button.config(bg="black", fg="white")
         canvas.delete("b2")
 
-    # Para o temporizador de inatividade quando a função é chamada
     stop_time()
-
-    # Define a linguagem selecionada (português ou inglês) conforme o parâmetro passado
     selected_language = language
 
-    # Limpa todos os elementos no canvas
     canvas.delete("all")
-
-    # Define a imagem de fundo
     canvas.create_image(0, 0, image=background_photo, anchor="nw")
 
-    # Carrega o logo da FedEx, redimensiona e converte para o formato necessário
     logo_img = Image.open("fedexLogo.png").convert("RGBA")
     logo_img = logo_img.resize((600, 184), Image.Resampling.LANCZOS)
     logo_photo = ImageTk.PhotoImage(logo_img)
 
-    # Posiciona o logo da FedEx no centro da tela, um pouco acima do meio
     canvas.create_image(screen_width // 2, screen_height // 12, image=logo_photo, anchor="center")
 
-    # Define os rótulos e suas versões em inglês
     labels = ["Nome e Sobrenome", "Email", "Celular", "Cidade", "UF", "Empresa", "Segmento", "CNPJ"]
     labels_en = ["Name and Last Name", "Email", "Phone", "City", "State", "Company", "Segment", "TAX ID"]
 
-    # Define a posição Y de cada rótulo
     y_distance_standar = screen_height // 11
     y_positions = [y_distance_standar + 150 + 50 + 20,
                    y_distance_standar + 250 + 100 + 40,
@@ -1311,121 +1269,109 @@ def show_registration_form(language):
                    y_distance_standar + 550 + 250 + 100,
                    y_distance_standar + 650 + 300 + 120]
 
-    # Define a fonte personalizada
     custom_font = tkFont.Font(family="Sans Light", size=45)
 
-    # Cria uma lista para armazenar os campos de entrada (entries)
     entries = []
 
-    # Configurações padrões
-    stardard_radius = 30  # Raio padrão
-    standard_x_start = ((screen_width // 10) + 5) - 5  # X inicial padrão
-    standard_x_end = screen_width - ((screen_width // 10) - 2)  # X final padrão
-    stardard_final_height = 120  # Altura padrão da caixa de cadastro
-    color_background_insert = "#FAF9F6"  # Cor de fundo da área de texto
-    Widht_Box_insert_font = 51  # Largura da fonte da caixa de entrada
+    stardard_radius = 30
+    standard_x_start = ((screen_width // 10) + 5) - 5
+    standard_x_end = screen_width - ((screen_width // 10) - 2)
+    stardard_final_height = 120
+    color_background_insert = "#FAF9F6"
+    Widht_Box_insert_font = 51
 
-    # Loop para criar cada campo de entrada e seu respectivo rótulo
     for idx, label in enumerate(labels):
-        # Define o texto do placeholder conforme a linguagem selecionada
         placeholder_text = labels[idx] if language == "pt" else labels_en[idx]
 
-        # Se o índice não for 3, 4, 5 ou 6, cria um campo de entrada de tamanho maior
         if idx != 3 and idx != 4 and idx != 5 and idx != 6:
-            # Define a posição e dimensões da caixa ao redor do campo de entrada
-            x1, y1 = standard_x_start - 3, y_positions[idx] - 15  # Início do retângulo preto
-            x2, y2 = standard_x_end + 3, y_positions[idx] + stardard_final_height  # Fim do retângulo preto
-            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=2, fill='black')
+            x1, y1 = standard_x_start - 3, y_positions[idx] - 15
+            x2, y2 = standard_x_end + 3, y_positions[idx] + stardard_final_height
+            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=2,
+                                     fill='black')
 
-            x1, y1 = standard_x_start + 3, y_positions[idx] - 9  # Início do retângulo branco
-            x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6  # Fim do retângulo branco
-            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1, fill=color_background_insert)
+            x1, y1 = standard_x_start + 3, y_positions[idx] - 9
+            x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6
+            create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1,
+                                     fill=color_background_insert)
 
-            # Cria o campo de entrada com um placeholder text, cor e largura definidas
-            entry = tk.Entry(root, font=custom_font, width=Widht_Box_insert_font, fg="black", bg=color_background_insert, bd=0)
+            entry = tk.Entry(root, font=custom_font, width=Widht_Box_insert_font, fg="black",
+                             bg=color_background_insert, bd=0)
             entry.insert(0, placeholder_text)
-
-            # Adiciona eventos para quando o campo ganha ou perde o foco, para manipular o placeholder text
             entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
 
-
-            # Adiciona eventos específicos para formatação de telefone e validação de CNPJ para os respectivos campos
-            if idx == 2 and language == "pt":  # Index 2 é o campo de telefone (Celular)
-                entry.bind("<FocusOut>", formatar_telefone)
-            elif idx == 7 and language == "pt":  # Index 7 é o campo de CNPJ
-                entry.bind("<FocusOut>", formatar_e_validar_cnpj)
+            if idx == 2 and language == "pt":
+                entry.bind("<FocusOut>", lambda event: formatar_telefone())
+            elif idx == 7 and language == "pt":
+                entry.bind("<FocusOut>", lambda event: formatar_e_validar_cnpj())
             else:
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
+
             entry.bind("<KeyRelease>", lambda event: check_fields(language))
 
-
-
-            # Posiciona o campo de entrada no canvas
             canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
-            # Adiciona o campo de entrada à lista de entradas
             entries.append(entry)
         else:
-            # Caso o índice seja 3, 4, 5 ou 6, cria um campo de entrada de tamanho menor
             if idx == 3 or idx == 5:
-                x1, y1 = standard_x_start - 3, y_positions[idx] - 15  # Início do retângulo preto
-                x2, y2 = screen_width // 2 + 180, y_positions[idx] + stardard_final_height  # Fim do retângulo preto
-                create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=3, fill='black')
-                x1, y1 = standard_x_start + 3, y_positions[idx] - 9  # Início do retângulo branco
-                x2, y2 = screen_width // 2 + 177 - 3, y_positions[idx] + stardard_final_height - 6  # Fim do retângulo branco
-                create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1, fill=color_background_insert)
-                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.60), fg="black", bg=color_background_insert, bd=0)
+                x1, y1 = standard_x_start - 3, y_positions[idx] - 15
+                x2, y2 = screen_width // 2 + 180, y_positions[idx] + stardard_final_height
+                create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=3,
+                                         fill='black')
+                x1, y1 = standard_x_start + 3, y_positions[idx] - 9
+                x2, y2 = screen_width // 2 + 177 - 3, y_positions[idx] + stardard_final_height - 6
+                create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1,
+                                         fill=color_background_insert)
+                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.60), fg="black",
+                                 bg=color_background_insert, bd=0)
                 entry.insert(0, placeholder_text)
-                entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
+                entry.bind("<FocusIn>",
+                           lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
                 entry.bind("<KeyRelease>", lambda event: check_fields(language))
                 canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
             else:
-                x1, y1 = screen_width // 2 + 200, y_positions[idx] - 15  # Início do retângulo preto
-                x2, y2 = standard_x_end + 3, y_positions[idx] + stardard_final_height  # Fim do retângulo preto
-                create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=2, fill='black')
-                x1, y1 = screen_width // 2 + 203 + 3, y_positions[idx] - 9  # Início do retângulo branco
-                x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6  # Fim do retângulo branco
-                create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1, fill=color_background_insert)
-                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.38) // 2 + 10, fg="black", bg=color_background_insert, bd=0)
+                x1, y1 = screen_width // 2 + 200, y_positions[idx] - 15
+                x2, y2 = standard_x_end + 3, y_positions[idx] + stardard_final_height
+                create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=2,
+                                         fill='black')
+                x1, y1 = screen_width // 2 + 203 + 3, y_positions[idx] - 9
+                x2, y2 = standard_x_end - 3, y_positions[idx] + stardard_final_height - 6
+                create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=stardard_radius, outline='black', width=1,
+                                         fill=color_background_insert)
+                entry = tk.Entry(root, font=custom_font, width=int(Widht_Box_insert_font * 0.38) // 2 + 10, fg="black",
+                                 bg=color_background_insert, bd=0)
                 entry.insert(0, placeholder_text)
-                entry.bind("<FocusIn>", lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
+                entry.bind("<FocusIn>",
+                           lambda event, placeholder=placeholder_text: on_entry_click(event, placeholder, idx))
                 entry.bind("<FocusOut>", lambda event, placeholder=placeholder_text: on_focusout(event, placeholder))
                 entry.bind("<KeyRelease>", lambda event: check_fields(language))
                 canvas.create_window((x1 + x2) // 2 + 15, (y1 + y2) // 2, window=entry)
                 entries.append(entry)
 
-    # Atribui os campos de entrada às variáveis globais para serem acessíveis em outras partes do programa
     name_entry, email_entry, phone_entry, city_entry, uf_entry, company_entry, segment_entry, cnpj_entry = entries
 
-    # Define o placeholder_text para phone_entry e cnpj_entry
     phone_entry.placeholder_text = "Celular" if language == "pt" else "Phone"
     cnpj_entry.placeholder_text = "CNPJ" if language == "pt" else "TAX ID"
 
-    # ----------------------------------- Fim do Formulario de registro ------------------------------
-
-    # ----------------------------------- Botões de iniciar e voltar ---------------------------------
     y_btn_position = screen_height // 2 + (screen_height // 4)
 
-    # Cria e posiciona o botão de "INICIAR"/"START" no canvas
-    x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65  # Início do retângulo preto
-    x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116  # Fim do retângulo preto
+    x1, y1 = screen_width - (screen_width // 2.5), y_btn_position - 65
+    x2, y2 = screen_width - (screen_width // 10), y_btn_position + 116
 
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     custom_font = tkFont.Font(family="Sans Light", size=35)
 
     register_button = tk.Button(root, text="INICIAR" if language == "pt" else "START",
                                 font=custom_font,
-                                command=lambda: save_registration_data(language), fg="white", bd=0,
+                                command=save_registration_data, fg="white", bd=0,
                                 bg="black", width=20, height=2,
                                 activebackground="white", activeforeground="black",
                                 highlightthickness=0, state=tk.DISABLED)
     canvas.create_window(screen_width // 2 + (screen_width // 4), y_btn_position + 25,
                          window=register_button, anchor="center")
 
-    # Cria e posiciona o botão de "VOLTAR"/"BACK" no canvas
-    x1, y1 = screen_width // 10, y_btn_position - 65  # Início do retângulo preto
-    x2, y2 = screen_width // 2.5, y_btn_position + 116  # Fim do retângulo preto
+    x1, y1 = screen_width // 10, y_btn_position - 65
+    x2, y2 = screen_width // 2.5, y_btn_position + 116
 
     create_rounded_rectangle(canvas, x1, y1, x2, y2, radius=65, outline='black', width=2, fill='black')
     back_button = tk.Button(root, text="VOLTAR" if language == "pt" else "BACK",
@@ -1434,9 +1380,9 @@ def show_registration_form(language):
                             bg="black", width=20, height=2,
                             activebackground="white", activeforeground="black",
                             highlightthickness=0)
-    canvas.create_window(screen_width // 2 - (screen_width // 4), y_btn_position + 25, window=back_button, anchor="center")
+    canvas.create_window(screen_width // 2 - (screen_width // 4), y_btn_position + 25, window=back_button,
+                         anchor="center")
 
-    # Bind events para mudar a cor dos botões ao interagir com eles
     register_button.bind("<Button-1>", change_color_reg_1)
     back_button.bind("<Button-1>", change_color_reg_2)
 
@@ -1449,13 +1395,10 @@ def show_registration_form(language):
     register_button.bind("<Leave>", Remove_change_color_reg_1)
     back_button.bind("<Leave>", Remove_change_color_reg_2)
 
-    # ----------------------------------- Fim de iniciar e voltar ---------------------------------
-
-    # Cria o teclado virtual para entrada de dados
     create_keyboard(root, canvas, language)
 
-    # Verifica pela primeira vez se todos os campos estão preechidos
     check_fields(language)
+
 
 def show_rest_screen():
     # Limpa todos os elementos do canvas
